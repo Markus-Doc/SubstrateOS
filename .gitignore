@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+
+# Secrets
+*.key
+*.pem
+.env*
+secrets/
+
+# Capsule outputs
+artifacts/outputs/
+artifacts/logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Claude Code
+.claude/todos/
