@@ -1,0 +1,26 @@
+{
+  "model": "claude-opus-4-8",
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(docs/**)",
+      "Write(scripts/**)",
+      "Write(artifacts/**)",
+      "Write(README.md)",
+      "Write(CLAUDE.md)",
+      "Write(.gitignore)"
+    ],
+    "deny": [
+      "Write(.env*)",
+      "Write(secrets/**)",
+      "Bash(git push*)",
+      "Bash(curl*)",
+      "Bash(wget*)"
+    ]
+  },
+  "context_files": [
+    "CLAUDE.md",
+    "docs/architecture/system-overview.md",
+    "docs/planning/open-questions.md"
+  ]
+}
