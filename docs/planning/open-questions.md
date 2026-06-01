@@ -15,9 +15,9 @@ Options:
 - Separate Linux machine on the local network
 - Dual boot
 
-Status: OPEN
-Resolved:
-Date:
+Status: CLOSED
+Resolved: Dedicated physical machine on LAN, connected to home router, woken via Wake-on-LAN command. This is the Lab host — all Lab Controller execution, memory storage, and Devcontainer runtime runs here.
+Date: 2026-06-01
 
 ---
 
