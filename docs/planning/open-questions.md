@@ -26,9 +26,9 @@ Date: 2026-06-01
 Question: Which specific agentmemory MCP fork or package will be used?
 Several exist with different feature sets and maintenance status.
 
-Status: OPEN
-Resolved:
-Date:
+Status: CLOSED
+Resolved: Use rohitg00/agentmemory as the reference package. It is not a hard Phase 1 dependency. Memory must sit behind a provider interface. agentmemory must never replace repo documentation, structured state files, decision records, or explicit instructions. Phase 1 source of truth is always repo files.
+Date: 2026-06-01
 
 ---
 
@@ -37,9 +37,9 @@ Date:
 Question: Self-hosted Firecrawl instance or cloud API with key?
 This affects secrets management and whether network access is needed from inside capsules.
 
-Status: OPEN
-Resolved:
-Date:
+Status: CLOSED
+Resolved: Use Firecrawl cloud API. Start on the free or lowest practical tier. Firecrawl must be optional and metered, sitting behind a provider interface so it can later be replaced, self-hosted, rate-limited, or disabled. Use cheaper retrieval methods first; invoke Firecrawl only when higher-quality extraction, crawling, or browser handling is required.
+Date: 2026-06-01
 
 ---
 
@@ -48,9 +48,9 @@ Date:
 Question: Is the Lab Controller a Python CLI (Click/Typer) from the start,
 or a shell script wrapper first?
 
-Status: OPEN
-Resolved:
-Date:
+Status: CLOSED
+Resolved: Python CLI using Typer from the start. Phase 1 scope: minimal commands only — init, status, ingest, doctor. No daemon, web app, or complex orchestration. Shell scripts are acceptable for one-off setup tasks but not for the Lab Controller itself.
+Date: 2026-06-01
 
 ---
 
@@ -59,9 +59,9 @@ Date:
 Question: Where do Devcontainers run?
 Docker Desktop on Windows, Docker inside WSL2, or a separate Linux machine?
 
-Status: OPEN
-Resolved:
-Date:
+Status: CLOSED
+Resolved: Docker in WSL2 for the Windows development machine. Remote Linux (Lab) is the later execution target but is not required in early development. Devcontainer configs must be WSL2-compatible first and remote-Linux-compatible later. No Docker Desktop-specific behaviour unless unavoidable.
+Date: 2026-06-01
 
 ---
 
@@ -71,6 +71,30 @@ Question: What exactly is the personal research dashboard?
 Needs a defined input (raw sources) and output (what the dashboard shows)
 before it can be built.
 
-Status: OPEN
-Resolved:
-Date:
+Status: CLOSED
+Resolved: A local project status dashboard, CLI-rendered from local files. Not a product UI.
+
+Inputs:
+- project manifest
+- research source list
+- decision records
+- open questions
+- task list
+- ingestion status
+- provider configuration status
+- local environment health checks
+- recent run logs
+
+Displays:
+- project name and current phase
+- source-of-truth research document
+- confirmed decisions
+- open questions
+- next recommended actions
+- configured providers
+- missing required configuration
+- last successful ingestion or processing run
+- warnings from environment checks
+
+A web dashboard may follow only after the state model proves useful.
+Date: 2026-06-01
