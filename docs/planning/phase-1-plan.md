@@ -1,5 +1,22 @@
 # Phase 1 Plan: The Core Loop (Weeks 1-4)
 
+## Progress: autonomous build run 2026-06-11
+
+Executed per docs/planning/phase-1-build-prompt.md (commits 8198ec3..HEAD).
+Delivered: labctl Typer CLI (init, status, ingest, doctor, gate per ADR-006);
+deterministic ingestion with SHA256/timestamp/source frontmatter and review-queue
+convention; SQLite FTS5 memory provider with BM25 and namespace isolation
+(agentmemory MCP integration deferred, ADR-009); OQ-006 status dashboard
+rendering from live repo state; release gate (secret scan, ruff, pytest);
+WSL2-validated capsule devcontainer template. Master research doc ingested as
+first source (25 chunks, searchable). Evidence in artifacts/evidence/; full
+summary in artifacts/phase-1-completion-report.md.
+
+Not yet done from the original checklist: Docling install, Firecrawl setup,
+multi-source ingestion (PDF/web), `lab build` capsule launch, token budget
+circuit breaker, Semgrep/Trivy, the Week 4 end-to-end dashboard-project build.
+Checklist below updated to reflect actual state.
+
 ## Objective
 
 Establish the Idea to Repo workflow end to end using existing tools.
@@ -20,18 +37,18 @@ with all security gates passing.
 
 ### Week 1: Skeleton and Tooling
 
-- [ ] Repo foundation committed (this scaffold)
-- [ ] Open questions resolved (see docs/planning/open-questions.md)
-- [ ] agentmemory MCP server installed and smoke-tested
+- [x] Repo foundation committed (this scaffold)
+- [x] Open questions resolved (see docs/planning/open-questions.md)
+- [ ] agentmemory MCP server installed and smoke-tested (deferred — built-in SQLite provider instead, ADR-009)
 - [ ] Docling and Firecrawl confirmed working on the Lab machine
-- [ ] .devcontainer base config created for a test capsule
+- [x] .devcontainer base config created for a test capsule (templates/capsule-devcontainer/, build-validated in WSL2)
 
 ### Week 2: Ingestion Pipeline
 
-- [ ] Ingest at least three research sources (PDF, web page, plain text)
-- [ ] All outputs normalised to Markdown with provenance metadata
-- [ ] Memory chunks stored with SHA256 hash and source URL
-- [ ] Review queue working: AI summaries held until manually approved
+- [ ] Ingest at least three research sources (PDF, web page, plain text) — 1/3 so far (master doc, plain text)
+- [x] All outputs normalised to Markdown with provenance metadata
+- [x] Memory chunks stored with SHA256 hash and source URL
+- [ ] Review queue working: AI summaries held until manually approved (convention implemented; not yet exercised with real AI summaries)
 
 ### Week 3: Lab Controller CLI (Minimal)
 
