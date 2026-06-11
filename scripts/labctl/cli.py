@@ -11,7 +11,11 @@ from pathlib import Path
 import typer
 
 from labctl import doctor as doctor_mod
-from labctl.config import find_repo_root, init_project
+from labctl.config import find_repo_root, init_project, load_manifest
+from labctl.ingest import ingest_file
+from labctl.memory import SQLiteMemory
+
+MEMORY_DB_REL = "artifacts/memory.sqlite"
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
@@ -35,6 +39,24 @@ def init() -> None:
     else:
         typer.echo("nothing to do")
     typer.echo(f"project: {manifest.project} (phase {manifest.phase})")
+
+
+@app.command()
+def ingest(
+    path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
+    namespace: str = typer.Option(None, help="Memory namespace (defaults to project namespace)"),
+    source_link: str = typer.Option(None, help="Original source URL, recorded as provenance"),
+) -> None:
+    """Normalise a file into the ingest store and index it into memory."""
+    root = _root()
+    manifest = load_manifest(root)
+    ns = namespace or (manifest.namespace if manifest else "default")
+    with SQLiteMemory(root / MEMORY_DB_REL) as memory:
+        result = ingest_file(root, path, ns, source_link=source_link, memory=memory)
+    status_word = "unchanged" if result.skipped else "ingested"
+    typer.echo(f"{status_word}: {result.output_path.relative_to(root)}")
+    typer.echo(f"sha256: {result.sha256}")
+    typer.echo(f"namespace: {ns}  chunks indexed: {result.chunks_stored}")
 
 
 @app.command()
