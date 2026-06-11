@@ -14,6 +14,7 @@ from labctl import doctor as doctor_mod
 from labctl.config import find_repo_root, init_project, load_manifest
 from labctl.ingest import ingest_file
 from labctl.memory import SQLiteMemory
+from labctl.status import build_report, render
 
 MEMORY_DB_REL = "artifacts/memory.sqlite"
 
@@ -39,6 +40,13 @@ def init() -> None:
     else:
         typer.echo("nothing to do")
     typer.echo(f"project: {manifest.project} (phase {manifest.phase})")
+
+
+@app.command()
+def status() -> None:
+    """Render the project status dashboard from local repo state."""
+    root = _root()
+    typer.echo(render(build_report(root)))
 
 
 @app.command()
