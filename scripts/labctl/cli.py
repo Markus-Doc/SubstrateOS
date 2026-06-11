@@ -11,6 +11,7 @@ from pathlib import Path
 import typer
 
 from labctl import doctor as doctor_mod
+from labctl import gate as gate_mod
 from labctl.config import find_repo_root, init_project, load_manifest
 from labctl.ingest import ingest_file
 from labctl.memory import SQLiteMemory
@@ -77,6 +78,21 @@ def doctor() -> None:
         typer.echo(f"[{mark}] {r.name}: {r.detail}")
     if doctor_mod.has_errors(results):
         raise typer.Exit(code=1)
+
+
+@app.command()
+def gate() -> None:
+    """Run the release gate: secret scan, lint, tests. Exit 1 on any failure."""
+    root = _root()
+    results = gate_mod.run_gate(root)
+    failed = False
+    for stage in results:
+        mark = "PASS" if stage.passed else "FAIL"
+        typer.echo(f"[{mark}] {stage.name}: {stage.detail}")
+        failed = failed or not stage.passed
+    if failed:
+        raise typer.Exit(code=1)
+    typer.echo("gate: all stages passed")
 
 
 if __name__ == "__main__":
