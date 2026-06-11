@@ -1,0 +1,11 @@
+{
+  "project": "Agent Brain",
+  "phase": "1",
+  "namespace": "agent-brain",
+  "source_of_truth": "MASTER_AI_System_Research.md",
+  "providers": {
+    "memory": "sqlite",
+    "ingest_web": "unconfigured (firecrawl optional, ADR-005)",
+    "execution": "claude-code"
+  }
+}
