@@ -64,17 +64,17 @@ with all security gates passing.
 
 ### Milestone 2: Ingestion Pipeline
 
-- [ ] Ingest at least three research sources (PDF, web page, plain text) — 1/3 so far (master doc, plain text)
+- [x] Ingest at least three research sources (PDF, web page, plain text) — master doc (text), arXiv 1706.03762 (PDF via Docling), anthropic.com/engineering/building-effective-agents (web via one metered Firecrawl scrape); all searchable (artifacts/evidence/m2-*)
 - [x] All outputs normalised to Markdown with provenance metadata
 - [x] Memory chunks stored with SHA256 hash and source URL
-- [ ] Review queue working: AI summaries held until manually approved (convention implemented; not yet exercised with real AI summaries)
+- [x] Review queue working: AI summaries held until manually approved (real claude -p summary generated 2026-06-12, human-approved, then indexed; labctl review list/generate/approve)
 
 ### Milestone 3: Lab Controller CLI (Minimal)
 
-- [ ] `lab new <project-name>` scaffolds a capsule directory and Devcontainer
-- [ ] `lab ingest <source>` runs the ingestion pipeline for a source
-- [ ] `lab build <project-name>` launches Claude Code in the capsule context
-- [ ] Token budget circuit breaker fires correctly on a test run
+- [x] `lab new <project-name>` scaffolds a capsule directory and Devcontainer (sibling dir per ADR-014: devcontainer tokens substituted, capsule CLAUDE.md, MIT LICENSE, git init)
+- [x] `lab ingest <source>` runs the ingestion pipeline for a source (text + PDF + URL dispatch)
+- [x] `lab build <project-name>` launches Claude Code in the capsule context (host-scoped headless per ADR-015)
+- [x] Token budget circuit breaker fires correctly on a test run (live demo 2026-06-12: 7120 tokens vs 50 budget, child tree killed, breaker record logged; artifacts/evidence/m3-breaker-demo-transcript.txt)
 
 ### Milestone 4: First Full Build and Audit
 

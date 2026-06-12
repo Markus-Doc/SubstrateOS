@@ -18,12 +18,16 @@ Two invocation policies travel with this:
    machine. If SubstrateOS ships publicly, end-users run plain `claude` under
    their own permission model; the flag must become configurable before any
    public release.
-2. **Headless children get no inherited `ANTHROPIC_API_KEY`.** labctl strips
-   that variable from the child environment for every headless claude
-   invocation (summaries and builds), delegating auth entirely to the claude
-   CLI's own credential store. Discovered empirically: a stale
-   `ANTHROPIC_API_KEY` in the user environment silently overrides the CLI's
-   subscription login and fails every `claude -p` call with "Invalid API key".
+2. **Headless children run with a cleaned environment**
+   (`labctl.capsule.clean_claude_env`). labctl strips `ANTHROPIC_API_KEY`,
+   `CLAUDECODE`, and `CLAUDE_CODE_*` from the child environment for every
+   headless claude invocation (summaries and builds). Both discovered
+   empirically: a stale `ANTHROPIC_API_KEY` in the user environment silently
+   overrides the CLI's subscription login ("Invalid API key" on every
+   `claude -p`), and inherited `CLAUDECODE`/`CLAUDE_CODE_*` vars (present
+   whenever labctl itself is driven from a Claude Code session) make the
+   child treat itself as a restricted nested session that auto-denies all
+   file writes even with `--dangerously-skip-permissions`.
 
 ## Context
 
