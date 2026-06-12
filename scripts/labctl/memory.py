@@ -89,6 +89,8 @@ class SQLiteMemory(MemoryProvider):
                 VALUES ('delete', old.id, old.content);
                 INSERT INTO chunks_fts(rowid, content) VALUES (new.id, new.content);
             END;
+            CREATE INDEX IF NOT EXISTS chunks_dedupe
+                ON chunks(namespace, sha256);
             """
         )
         self.conn.commit()
@@ -96,6 +98,15 @@ class SQLiteMemory(MemoryProvider):
     def store(
         self, namespace: str, content: str, sha256: str, source: str, captured_utc: str
     ) -> int:
+        """Store one chunk; an identical chunk (same namespace, source hash,
+        and content) is not stored twice — the existing row id is returned
+        (Phase 2 M1 dedupe guard; re-ingest must be a true no-op)."""
+        existing = self.conn.execute(
+            "SELECT id FROM chunks WHERE namespace = ? AND sha256 = ? AND content = ?",
+            (namespace, sha256, content),
+        ).fetchone()
+        if existing is not None:
+            return existing["id"]
         cursor = self.conn.execute(
             "INSERT INTO chunks (namespace, content, sha256, source, captured_utc) "
             "VALUES (?, ?, ?, ?, ?)",
@@ -104,6 +115,23 @@ class SQLiteMemory(MemoryProvider):
         self.conn.commit()
         assert cursor.lastrowid is not None
         return cursor.lastrowid
+
+    def dedupe(self) -> int:
+        """One-time cleanup of duplicate rows from pre-guard re-ingests.
+
+        Keeps the earliest row of every (namespace, sha256, content) group;
+        the AFTER DELETE trigger keeps the FTS index consistent. Returns the
+        number of rows removed.
+        """
+        cursor = self.conn.execute(
+            """
+            DELETE FROM chunks WHERE id NOT IN (
+                SELECT MIN(id) FROM chunks GROUP BY namespace, sha256, content
+            )
+            """
+        )
+        self.conn.commit()
+        return cursor.rowcount
 
     def search_keyword(self, namespace: str, query: str, limit: int = 10) -> list[MemoryHit]:
         fts_query = _quote_fts_query(query)

@@ -15,6 +15,7 @@ from labctl import doctor as doctor_mod
 from labctl import gate as gate_mod
 from labctl import lab as lab_mod
 from labctl import review as review_mod
+from labctl import usage as usage_mod
 from labctl.config import find_repo_root, init_project, load_manifest
 from labctl.ingest import ingest_source
 from labctl.memory import SQLiteMemory
@@ -262,6 +263,13 @@ def lab_dispatch(
         typer.echo(f"dispatch exited non-zero: {result.exit_code}", err=True)
         raise typer.Exit(code=result.exit_code)
     typer.echo("dispatch completed within budget")
+
+
+@app.command()
+def usage() -> None:
+    """Cumulative token accounting across capsule and lab run logs (ADR-016)."""
+    root = _root()
+    typer.echo(usage_mod.render(usage_mod.collect_usage(root)))
 
 
 @app.command()

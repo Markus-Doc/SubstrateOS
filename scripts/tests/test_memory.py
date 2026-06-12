@@ -82,3 +82,31 @@ def test_punctuation_query_does_not_raise(memory: SQLiteMemory) -> None:
     _store(memory, "ns", "content mentioning labctl and sqlite")
     for query in ('labctl: "quoted" -dash', "a*b (c) OR NOT", '""', "co-located near:term"):
         memory.search_keyword("ns", query)  # must not raise
+
+
+def test_store_dedupes_identical_chunks(memory: SQLiteMemory) -> None:
+    first = _store(memory, "ns", "the same chunk of content")
+    second = _store(memory, "ns", "the same chunk of content")
+    assert first == second
+    rows = memory.conn.execute("SELECT COUNT(*) AS n FROM chunks").fetchone()
+    assert rows["n"] == 1
+    # different namespace or different source hash is NOT a duplicate
+    _store(memory, "other-ns", "the same chunk of content")
+    _store(memory, "ns", "the same chunk of content", sha256="f" * 64)
+    rows = memory.conn.execute("SELECT COUNT(*) AS n FROM chunks").fetchone()
+    assert rows["n"] == 3
+
+
+def test_dedupe_cleans_pre_guard_duplicates(memory: SQLiteMemory) -> None:
+    # simulate pre-guard duplicate rows via direct inserts
+    for _ in range(3):
+        memory.conn.execute(
+            "INSERT INTO chunks (namespace, content, sha256, source, captured_utc) "
+            "VALUES ('ns', 'duplicated chunk text', ?, 's', 't')",
+            ("a" * 64,),
+        )
+    memory.conn.commit()
+    removed = memory.dedupe()
+    assert removed == 2
+    hits = memory.search_keyword("ns", "duplicated chunk")
+    assert len(hits) == 1  # FTS index stayed consistent through the deletes

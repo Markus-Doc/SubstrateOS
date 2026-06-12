@@ -48,6 +48,25 @@ def test_reingest_unchanged_is_skipped_but_logged(repo: Path):
     assert len(log_lines) == 2
 
 
+def test_reingest_unchanged_does_not_reindex_memory(repo: Path):
+    """Phase 2 M1: re-ingest must be a true no-op for memory rows."""
+    stored: list[str] = []
+
+    class FakeMemory:
+        def store(self, namespace, content, sha256, source, captured_utc):
+            stored.append(content)
+            return len(stored)
+
+    src = make_source(repo)
+    first = ingest_file(repo, src, "test-ns", memory=FakeMemory())
+    assert first.chunks_stored > 0
+    count_after_first = len(stored)
+    second = ingest_file(repo, src, "test-ns", memory=FakeMemory())
+    assert second.skipped
+    assert second.chunks_stored == 0
+    assert len(stored) == count_after_first
+
+
 def test_changed_content_rewrites(repo: Path):
     src = make_source(repo)
     first = ingest_file(repo, src, "test-ns")
