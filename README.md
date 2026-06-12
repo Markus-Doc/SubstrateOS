@@ -60,10 +60,12 @@ token budget circuit breaker, and the Milestone 4 capstone — the OQ-006
 research dashboard built end to end through the harness and pushed to a
 private repo with gitleaks/Semgrep/Trivy green.
 See docs/planning/phase-1-plan.md and docs/planning/phase-1-retrospective.md.
-Phase 2 planned and approved 2026-06-12 (docs/planning/phase-2-plan.md):
-hybrid retrieval with local embeddings on the RTX 3070 Lab host, in-container
-capsule execution, Dynamic Workflows, capstoned by a codebase-wide audit of
-SubstrateOS itself through the harness.
+Phase 2 in progress (docs/planning/phase-2-plan.md, realigned 2026-06-12 per
+ADR-017): the Lab host as a remote agent operator — `labctl lab` wake / status
+/ sync / dispatch landed 2026-06-12 with the box provisioned and
+subscription-authed — plus in-container capsule execution and Dynamic
+Workflows, capstoned by a codebase-wide audit of SubstrateOS itself through
+the harness. Hybrid retrieval is deferred behind `MemoryProvider` (ADR-017).
 Stack: Python (Typer) Lab CLI, SQLite FTS5 memory (ADR-009), Claude Code.
 
 ## Repo Structure

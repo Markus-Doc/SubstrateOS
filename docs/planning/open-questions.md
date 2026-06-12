@@ -98,3 +98,19 @@ Displays:
 
 A web dashboard may follow only after the state model proves useful.
 Date: 2026-06-01
+
+---
+
+## OQ-007: Remote Trigger Pathways for the Lab Operator
+
+Question: How does Markus trigger the Lab operator (ADR-017) when away from
+the control plane? Candidate channels: iMessage, Telegram, WhatsApp, Claude
+"Dispatch". The flow to design: message arrives -> box wakes (WoL relay or
+always-on listener) -> mission dispatched -> result reported back on the same
+channel.
+
+Constraints already locked: subscription auth only (no API keys), no secrets
+in tracked files, the existing `labctl lab` surface stays the execution path.
+
+Status: OPEN — explicitly TBD by the owner (2026-06-12). Build nothing for
+this until a channel is chosen.
