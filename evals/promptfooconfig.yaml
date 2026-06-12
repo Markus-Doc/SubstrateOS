@@ -1,0 +1,35 @@
+# SubstrateOS release-gate eval (ADR-012).
+# Zero-cost smoke eval: the echo provider returns the prompt verbatim, so this
+# proves the promptfoo harness runs in the gate with no API keys and no spend.
+description: SubstrateOS gate smoke eval
+
+providers:
+  - echo
+
+prompts:
+  - "{{input}}"
+
+tests:
+  - description: harness round-trips a literal prompt
+    vars:
+      input: SubstrateOS gate smoke test
+    assert:
+      - type: contains
+        value: SubstrateOS
+  - description: assertions can fail the gate (negative space probe)
+    vars:
+      input: provenance requires a SHA256 hash and source URL
+    assert:
+      - type: icontains
+        value: sha256
+      - type: not-contains
+        value: AKIA
+
+# Phase 2 (ADR-012): once capsule agents carry real system prompts, activate
+# the OWASP LLM injection preset against them and add a regression test for
+# every injection fixed, e.g.:
+#
+# redteam:
+#   purpose: capsule build agent
+#   plugins:
+#     - owasp:llm
