@@ -81,10 +81,16 @@ def doctor() -> None:
 
 
 @app.command()
-def gate() -> None:
-    """Run the release gate: secret scan, lint, tests. Exit 1 on any failure."""
+def gate(
+    strict: bool = typer.Option(
+        False,
+        "--strict",
+        help="Fail stages whose tool is missing instead of skipping them.",
+    ),
+) -> None:
+    """Run the release gate: secret scan, lint, tests, SAST, vuln scan, evals."""
     root = _root()
-    results = gate_mod.run_gate(root)
+    results = gate_mod.run_gate(root, strict=strict)
     failed = False
     for stage in results:
         mark = "PASS" if stage.passed else "FAIL"

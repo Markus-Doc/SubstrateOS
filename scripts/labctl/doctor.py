@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import importlib.util
+import os
 import shutil
 import sqlite3
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -81,6 +84,63 @@ def _check_manifest(root: Path) -> CheckResult:
     return CheckResult("manifest", True, "warning", f"project: {manifest.project}")
 
 
+def _check_cli_tool(name: str, purpose: str) -> CheckResult:
+    """Warning-severity presence check for an external gate/ingestion tool."""
+    path = shutil.which(name)
+    return CheckResult(
+        name,
+        path is not None,
+        "warning",
+        path if path else f"not on PATH ({purpose})",
+    )
+
+
+def _check_semgrep() -> CheckResult:
+    """Semgrep is reachable natively or via WSL (ADR-013)."""
+    path = shutil.which("semgrep")
+    if path is not None:
+        return CheckResult("semgrep", True, "warning", path)
+    if shutil.which("wsl") is not None:
+        probe = subprocess.run(
+            ["wsl", "-e", "semgrep", "--version"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        if probe.returncode == 0:
+            return CheckResult(
+                "semgrep", True, "warning", f"via WSL ({probe.stdout.strip()})"
+            )
+    return CheckResult(
+        "semgrep", False, "warning", "not on PATH or in WSL (sast stage skipped)"
+    )
+
+
+def _check_docling() -> CheckResult:
+    found = importlib.util.find_spec("docling") is not None
+    return CheckResult(
+        "docling",
+        found,
+        "warning",
+        "importable" if found else "not installed (PDF ingestion unavailable)",
+    )
+
+
+def _check_firecrawl_key(root: Path) -> CheckResult:
+    """Report only whether FIRECRAWL_API_KEY is configured — never its value."""
+    if os.environ.get("FIRECRAWL_API_KEY"):
+        return CheckResult("firecrawl-key", True, "warning", "set in environment")
+    env_file = root / ".env"
+    if env_file.is_file() and "FIRECRAWL_API_KEY" in env_file.read_text(
+        encoding="utf-8", errors="ignore"
+    ):
+        return CheckResult("firecrawl-key", True, "warning", "set in .env")
+    return CheckResult(
+        "firecrawl-key", False, "warning", "not set (web ingestion unavailable)"
+    )
+
+
 def run_checks(root: Path) -> list[CheckResult]:
     return [
         _check_python(),
@@ -89,6 +149,12 @@ def run_checks(root: Path) -> list[CheckResult]:
         _check_dirs(root),
         _check_fts5(),
         _check_manifest(root),
+        _check_cli_tool("gitleaks", "secret-scan uses fallback scanner"),
+        _check_cli_tool("trivy", "vuln-scan stage skipped"),
+        _check_semgrep(),
+        _check_cli_tool("node", "evals stage skipped"),
+        _check_docling(),
+        _check_firecrawl_key(root),
     ]
 
 
