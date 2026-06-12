@@ -99,10 +99,20 @@ def test_magic_packet_rejects_bad_mac(bad: str):
         magic_packet(bad)
 
 
-def test_send_wol_uses_injected_sender():
+def test_send_wol_bursts_via_injected_sender():
     sent: list[tuple[bytes, tuple[str, int]]] = []
-    send_wol("aa:bb:cc:dd:ee:ff", broadcast="192.168.50.255", sender=lambda p, a: sent.append((p, a)))
-    assert sent == [(magic_packet("aa:bb:cc:dd:ee:ff"), ("192.168.50.255", WOL_PORT))]
+    send_wol(
+        "aa:bb:cc:dd:ee:ff",
+        broadcast="192.168.50.255",
+        sender=lambda p, a: sent.append((p, a)),
+        gap_seconds=0,
+    )
+    # burst of identical packets: singles get lost right after suspend
+    assert len(sent) == 3
+    assert all(
+        item == (magic_packet("aa:bb:cc:dd:ee:ff"), ("192.168.50.255", WOL_PORT))
+        for item in sent
+    )
 
 
 # --- status -----------------------------------------------------------------
@@ -159,6 +169,38 @@ def test_status_probe_prefixes_local_bin():
     probe = _status_probe("~/SubstrateOS")
     assert probe.startswith('PATH="$HOME/.local/bin:$PATH"')
     assert 'git -C "$HOME/SubstrateOS" log -1' in probe
+
+
+# --- sleep ------------------------------------------------------------------
+
+
+def test_sleep_sends_detached_suspend(repo: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("LAB_SSH_HOST", raising=False)
+    from labctl.lab import sleep_host
+
+    calls: list[list[str]] = []
+
+    def runner(argv, **kwargs):
+        calls.append(argv)
+        return completed()
+
+    sleep_host(load_lab_config(repo), runner=runner)
+    assert len(calls) == 1
+    remote = calls[0][-1]
+    assert "systemctl suspend" in remote
+    assert "poweroff" not in remote  # ADR-017: suspend only, never poweroff
+    assert remote.startswith("nohup")  # detached so the ssh exits cleanly
+
+
+def test_sleep_failure_raises(repo: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("LAB_SSH_HOST", raising=False)
+    from labctl.lab import sleep_host
+
+    def runner(argv, **kwargs):
+        return completed(returncode=255, stderr="Connection refused")
+
+    with pytest.raises(LabError, match="lab sleep failed"):
+        sleep_host(load_lab_config(repo), runner=runner)
 
 
 # --- sync -------------------------------------------------------------------

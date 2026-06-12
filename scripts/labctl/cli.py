@@ -201,6 +201,19 @@ def lab_wake(
             raise typer.Exit(code=1)
 
 
+@lab_app.command("sleep")
+def lab_sleep() -> None:
+    """Suspend the lab host (S3). Never poweroff - wake it with `lab wake`."""
+    root = _root()
+    config = lab_mod.load_lab_config(root)
+    try:
+        lab_mod.sleep_host(config)
+    except lab_mod.LabError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"suspend sent to {config.ssh_host} (resume with `labctl lab wake`)")
+
+
 @lab_app.command("status")
 def lab_status() -> None:
     """One ssh round trip: hostname, uptime, claude/codex/gh auth, repo HEAD."""

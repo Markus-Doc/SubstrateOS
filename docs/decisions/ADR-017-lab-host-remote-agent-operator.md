@@ -34,9 +34,25 @@ Concretely:
    sleep targets masked, WiFi driver blacklisted, ufw enabled with ssh +
    tailscale allows, Docker installed — unblocking M4). The agent-CLI layer
    stays user-level as decided.
-4. The wake-into-current-OS guarantee is a user crontab entry,
-   `@reboot sleep 30 && git -C ~/SubstrateOS pull --ff-only`, plus
-   `labctl lab sync` for on-demand refresh.
+4. The wake-into-current-OS guarantee is layered: a user crontab entry
+   (`@reboot sleep 30 && git -C ~/SubstrateOS pull --ff-only`),
+   `labctl lab sync` for on-demand refresh, and the
+   `substrateos-agent.service` systemd unit (added same day): on every boot
+   it pulls the repo (with retry) and starts a standing interactive
+   `claude --dangerously-skip-permissions` in a tmux session named
+   `substrateos`, cwd = the checkout — attach with
+   `ssh -t substrate-lab tmux attach -t substrateos`.
+5. **Lifecycle is suspend-only — never poweroff.** Wake-from-S5 proved
+   unreliable on this hardware (worked once, then required the physical
+   power button; BIOS-dependent). Wake-from-suspend (S3) is verified
+   reliable (~16s to ssh, twice consecutively) and the standing claude
+   session survives it. `labctl lab sleep` suspends; `labctl lab wake`
+   resumes. Sleep/suspend targets are unmasked for this; hibernate stays
+   masked and the lid stays ignored. Wake packets are sent as a small burst
+   to the **subnet-directed broadcast** (`LAB_WOL_BROADCAST`): the
+   255.255.255.255 limited broadcast leaves a nondeterministic interface on
+   the multi-homed control plane (VirtualBox adapters) and was the cause of
+   flaky wakes.
 5. Remote git identity matches the standing convention: "M. Walker" with the
    GitHub noreply email, configured in the remote clone.
 
