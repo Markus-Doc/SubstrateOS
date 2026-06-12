@@ -1,0 +1,2 @@
+events by type: {'system': 20, 'rate_limit_event': 1, 'assistant': 37, 'user': 22, 'result': 1}
+result: {'subtype': 'success', 'duration_ms': 284673, 'num_turns': 23, 'total_cost_usd': 2.4491169999999998}
