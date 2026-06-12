@@ -1,4 +1,4 @@
-# Phase 2 Plan: Performance, Scale, and the Lab Execution Host
+# Phase 2 Plan: Performance, Scale, and the Lab Operator Host
 
 Approved 2026-06-12. Source scope: Final_Research-Agent_Brain.md §8 Phase 2
 ("Optimize retrieval and expand autonomous capabilities") plus the deferred
@@ -6,19 +6,26 @@ items assigned to Phase 2 by ADR-009 (vector/hybrid retrieval), ADR-015
 (in-container capsule execution — Phase 2's first job), ADR-016 (per-campaign
 cumulative accounting), and the Phase 1 retrospective debt list.
 
+**Realigned 2026-06-12 per ADR-017**: the Lab host is a remote agent operator,
+not a compute node (actual hardware is a GTX 950M, not the RTX 3070 the
+original plan assumed). Hybrid retrieval / local embeddings move off the
+critical path to the Deferred section below.
+
 ## Objective
 
-Optimize retrieval and expand autonomous capabilities: local embeddings on the
-RTX 3070 Lab host, hybrid retrieval behind the existing `MemoryProvider` seam,
-in-container capsule execution, and Dynamic Workflows for codebase-wide audits.
+Expand autonomous capabilities: the Lab host as a wake-on-demand remote agent
+operator (`labctl lab`), in-container capsule execution, and Dynamic Workflows
+for codebase-wide audits. Retrieval optimisation (vector/hybrid) is deferred
+behind the `MemoryProvider` seam per ADR-017.
 
 ## Locked decisions (owner, 2026-06-12)
 
-1. **The Lab host (RTX 3070, OQ-001) is ready and reachable over SSH.** Goal,
-   flagged by the owner: the machine becomes dedicated to operating frontier
-   AI models explicitly the way SubstrateOS sets it — wake it, dispatch any
-   task via the established defaults. Lab-host integration is a first-class
-   milestone, not an embeddings detail.
+1. **The Lab host is a remote agent operator, not a compute node (ADR-017).**
+   The machine is dedicated to operating frontier AI models explicitly the way
+   SubstrateOS sets it — wake it, dispatch any task via the established
+   defaults, pick up any Markus-Doc project as if at the main PC. Subscription
+   auth only (device-code login on Claude Max; Codex Plus as backup), never
+   API keys. Nothing depends on its processing power.
 2. **Capsule auth preference order:** subscription login (headless OAuth via
    `claude setup-token`, token injected as an env var at container launch) →
    API key in a secure gitignored env file → anything else. Owner is on
@@ -43,11 +50,13 @@ and any review-queue approvals (human-gated by design).
 ## Success Metric
 
 A codebase-wide audit of SubstrateOS executed through the harness: dispatched
-by `labctl`, run by an in-container agent, using hybrid retrieval (BM25 +
-vector from embeddings computed on the RTX 3070), orchestrated as a Dynamic
-Workflow (architect → workers → reviewer → judge), producing a committed
-findings report — with `labctl gate --strict` all-PASS and evidence in
-`artifacts/evidence/`.
+by `labctl`, run by an in-container agent, grounded by BM25 retrieval over the
+repo's namespace (hybrid retrieval deferred per ADR-017), orchestrated as a
+Dynamic Workflow (architect → workers → reviewer → judge), producing a
+committed findings report — with `labctl gate --strict` all-PASS and evidence
+in `artifacts/evidence/`. Plus, already delivered by the realigned M2: the Lab
+operator is user-ready — wake, status, sync, and a metered dispatch all
+verified from the control plane.
 
 ## Task Breakdown
 
@@ -62,34 +71,34 @@ findings report — with `labctl gate --strict` all-PASS and evidence in
       (`labctl usage`), closing the ADR-016 open consequence
 - [ ] Tests for all of the above; suite green
 
-### Milestone 2: Lab Host Integration
+### Milestone 2: Lab Operator Bring-Up (realigned per ADR-017)
 
-- [ ] Lab host SSH/WoL details collected from the owner (hostname/IP, user,
-      key, MAC) and stored in gitignored config only — single pause point
-- [ ] `labctl lab wake` sends the Wake-on-LAN magic packet (stdlib socket,
-      no new dependencies)
-- [ ] `labctl lab status` over SSH: reachability, uptime, `nvidia-smi`,
-      Docker presence; wired into `labctl doctor`
-- [ ] Lab host role recorded as an ADR (what runs there vs the Windows
-      control plane; extends ADR-013)
-
-### Milestone 3: Hybrid Retrieval
-
-- [ ] `EmbeddingProvider` seam (mirrors the ADR-005 provider pattern):
-      HTTP call to an embedding service on the Lab host; serving stack and
-      model chosen during the campaign and recorded as an ADR
-- [ ] Embeddings stored in SQLite next to chunks (ADR-001: no Postgres until
-      SQLite measurably breaks; brute-force cosine at current scale)
-- [ ] `SQLiteMemory.search_vector` implemented (replacing the Phase 1 stub)
-      plus hybrid merge (reciprocal rank fusion) behind `MemoryProvider`;
-      namespace isolation preserved in SQL
-- [ ] CLI: `labctl search --mode keyword|vector|hybrid`
-- [ ] Embeddings backfilled for existing namespaces (substrateos,
-      research-dashboard)
-- [ ] Retrieval evidence: recorded query set run BM25-only vs hybrid,
-      side-by-side results committed to `artifacts/evidence/`
+- [x] Lab host SSH/WoL details collected from the owner and stored in
+      gitignored config only (`LAB_SSH_HOST`, `LAB_WOL_MAC`,
+      `LAB_WOL_BROADCAST`, `LAB_REMOTE_REPO` in `.env`)
+- [x] `labctl lab wake` sends the Wake-on-LAN magic packet (stdlib socket,
+      no new dependencies), with `--wait` ssh polling
+- [x] `labctl lab status` over SSH: one round trip — hostname, uptime,
+      claude/codex versions, gh auth state, repo HEAD; soft check wired into
+      `labctl doctor`
+- [x] `labctl lab sync`: clone-or-fast-forward the GitHub checkout on the
+      box; on-boot auto-sync via user crontab (`@reboot ... pull --ff-only`)
+- [x] `labctl lab dispatch`: metered headless claude mission on the box —
+      mission on stdin (ADR-015), stream-json metering and token circuit
+      breaker (ADR-016), run logs on the control plane
+      (`artifacts/lab-runs/`, gitignored)
+- [x] Box provisioned sudo-free into `~/.local/bin`: claude (native
+      installer), gh (release tarball); codex preinstalled; remote git
+      identity set to the standing convention
+- [x] Subscription auth on the box: claude (Max, device code), gh
+      (Markus-Doc write, device code), codex (Plus, device code) — never
+      API keys
+- [x] Lab host role recorded as ADR-017 (extends ADR-013)
 
 ### Milestone 4: In-Container Capsule Execution (ADR-015's deferred first job)
+
+Remaining prerequisite: Docker is not installed on the Lab box and requires
+sudo — install it (owner action or supervised session) before this milestone.
 
 - [ ] Capsule image gets the claude CLI; auth per locked decision 2 — OAuth
       token injected as an env var at container launch, never written to a
@@ -112,7 +121,8 @@ findings report — with `labctl gate --strict` all-PASS and evidence in
       verification commands, stop conditions); architect → bounded workers →
       reviewer → judge. Claude Code native orchestration only (ADR-002)
 - [ ] `labctl audit <repo>` runs a codebase-wide audit as that Dynamic
-      Workflow, grounded by hybrid retrieval over the repo's namespace
+      Workflow, grounded by BM25 retrieval over the repo's namespace
+      (hybrid deferred per ADR-017)
 - [ ] Capstone (success metric): the audit run on SubstrateOS itself through
       the harness, in-container, findings report committed. Missions framed
       as engineering/code-quality audits, not pentest language (master doc:
@@ -125,11 +135,31 @@ findings report — with `labctl gate --strict` all-PASS and evidence in
 - [ ] Memory and `~/.claude/plans/` handoff updated for Phase 3
 - [ ] Pushed to main only behind `labctl gate --strict` all-PASS
 
+## Deferred from the critical path (ADR-017): Hybrid Retrieval (was Milestone 3)
+
+The Lab box has no useful inference hardware (GTX 950M) and the operator role
+does not need it. Vector/hybrid retrieval stays a deferred seam behind
+`MemoryProvider` (the ADR-009 `search_vector` stub) until hardware or a
+demonstrated retrieval-quality need justifies it. Preserved checklist for
+when it returns:
+
+- [ ] `EmbeddingProvider` seam (mirrors the ADR-005 provider pattern);
+      serving stack and model chosen then and recorded as an ADR
+- [ ] Embeddings stored in SQLite next to chunks (ADR-001; brute-force
+      cosine at current scale)
+- [ ] `SQLiteMemory.search_vector` plus hybrid merge (reciprocal rank
+      fusion) behind `MemoryProvider`; namespace isolation preserved in SQL
+- [ ] CLI: `labctl search --mode keyword|vector|hybrid`; backfill;
+      BM25-vs-hybrid evidence in `artifacts/evidence/`
+
+The M5 capstone audit grounds itself in BM25 retrieval (ADR-009) instead.
+
 ## Standing Constraints
 
 - No new tools beyond the research docs without an ADR; SQLite until it
   measurably breaks (ADR-001); no LangGraph/AutoGen (ADR-002); no local
-  inference on the i7 laptop — embedding compute happens only on the Lab host.
+  inference on the i7 laptop, and none on the Lab box either (GTX 950M;
+  ADR-017 — embedding compute waits for real hardware).
 - Never bypass `labctl.capsule.clean_claude_env` / `_spawn_claude`; missions
   via stdin; `--dangerously-skip-permissions` is owner policy (ADR-015).
 - Capsule isolation guarantees (`templates/capsule-devcontainer/README.md`)

@@ -2,15 +2,18 @@
 
 ## Project
 SubstrateOS (formerly Agent Brain). Local-first AI orchestration harness.
-Phase 2 of 3: performance, scale, and the Lab execution host.
+Phase 2 of 3: performance, scale, and the Lab operator host (ADR-017).
 
 ## Scope Right Now
 Phase 1 complete (2026-06-12; see docs/planning/phase-1-retrospective.md).
-Phase 2 plan approved 2026-06-12: docs/planning/phase-2-plan.md — six
-milestones (inherited debt, Lab host integration, hybrid retrieval,
-in-container capsule execution, Dynamic Workflows + SubstrateOS-audit
-capstone, close-out), executed as one autonomous campaign per ADR-010.
-Build target remains the labctl package under scripts/.
+Phase 2 realigned 2026-06-12 per ADR-017: the Lab host is a remote agent
+operator, not a compute node — `labctl lab` (wake/status/sync/dispatch)
+landed and the box is provisioned with subscription auth only. Remaining
+campaign tail per docs/planning/phase-2-plan.md: M1 inherited debt,
+in-container capsule execution (needs Docker on the box), Dynamic Workflows
++ SubstrateOS-audit capstone, close-out. Hybrid retrieval is deferred behind
+MemoryProvider (ADR-017). Remote trigger pathways are OQ-007 — build nothing
+for them. Build target remains the labctl package under scripts/.
 
 ## Core Rules
 - Treat MASTER_AI_System_Research.md (repo root) as the master research document (ADR-008).
