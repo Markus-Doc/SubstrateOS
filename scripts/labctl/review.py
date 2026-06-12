@@ -10,6 +10,7 @@ through here — it is promoted by construction (see labctl.ingest).
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from collections.abc import Callable
@@ -75,9 +76,13 @@ def run_claude_summary(body: str) -> str:
     claude = shutil.which("claude")
     if claude is None:
         raise RuntimeError("claude CLI not found on PATH (needed for summaries)")
+    # Auth is delegated to the claude CLI's own credential store: an inherited
+    # ANTHROPIC_API_KEY would override it (ADR-015).
+    env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     proc = subprocess.run(
         [claude, "-p", SUMMARY_INSTRUCTION, "--dangerously-skip-permissions"],
         input=body,
+        env=env,
         capture_output=True,
         text=True,
         encoding="utf-8",

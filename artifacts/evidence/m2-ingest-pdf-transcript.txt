@@ -1,0 +1,19 @@
+[INFO] 2026-06-12 13:49:24,251 [RapidOCR] base.py:22: Using engine_name: torch
+[INFO] 2026-06-12 13:49:24,273 [RapidOCR] device_config.py:57: Using CPU device
+[INFO] 2026-06-12 13:49:24,282 [RapidOCR] download_file.py:60: File exists and is valid: C:\Users\marku\OneDrive\Documents\GitHub\SubstrateOS\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_det_mobile.pth
+[INFO] 2026-06-12 13:49:24,282 [RapidOCR] main.py:50: Using C:\Users\marku\OneDrive\Documents\GitHub\SubstrateOS\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_det_mobile.pth
+[INFO] 2026-06-12 13:49:24,501 [RapidOCR] base.py:22: Using engine_name: torch
+[INFO] 2026-06-12 13:49:24,501 [RapidOCR] device_config.py:57: Using CPU device
+[INFO] 2026-06-12 13:49:24,501 [RapidOCR] download_file.py:60: File exists and is valid: C:\Users\marku\OneDrive\Documents\GitHub\SubstrateOS\.venv\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_mobile.pth
+[INFO] 2026-06-12 13:49:24,501 [RapidOCR] main.py:50: Using C:\Users\marku\OneDrive\Documents\GitHub\SubstrateOS\.venv\Lib\site-packages\rapidocr\models\ch_ptocr_mobile_v2.0_cls_mobile.pth
+[INFO] 2026-06-12 13:49:24,594 [RapidOCR] base.py:22: Using engine_name: torch
+[INFO] 2026-06-12 13:49:24,594 [RapidOCR] device_config.py:57: Using CPU device
+[INFO] 2026-06-12 13:49:24,611 [RapidOCR] download_file.py:60: File exists and is valid: C:\Users\marku\OneDrive\Documents\GitHub\SubstrateOS\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_rec_mobile.pth
+[INFO] 2026-06-12 13:49:24,611 [RapidOCR] main.py:50: Using C:\Users\marku\OneDrive\Documents\GitHub\SubstrateOS\.venv\Lib\site-packages\rapidocr\models\ch_PP-OCRv4_rec_mobile.pth
+
+Loading weights:   0%|          | 0/770 [00:00<?, ?it/s]
+Loading weights:  76%|#######6  | 587/770 [00:00<00:00, 5698.40it/s]
+Loading weights: 100%|##########| 770/770 [00:00<00:00, 5780.30it/s]
+ingested: artifacts\ingest\substrateos\attention-is-all-you-need.md
+sha256: bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697
+namespace: substrateos  chunks indexed: 31

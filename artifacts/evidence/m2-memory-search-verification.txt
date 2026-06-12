@@ -1,0 +1,27 @@
+namespace substrateos: 69 chunks from 3 distinct sources:
+  - C:\Users\marku\OneDrive\Documents\GitHub\Agent-Brain\MASTER_AI_System_Research.md
+  - https://arxiv.org/pdf/1706.03762
+  - https://www.anthropic.com/engineering/building-effective-agents
+
+[plain text (master research doc)] query='agentmemory namespace' hits=0
+
+[PDF (attention paper via Docling)] query='multi-head attention' hits=2
+  source: https://arxiv.org/pdf/1706.03762
+  sha256: bdfaa68d8984f0dc...  score: -6.08
+  excerpt: ## Scaled Dot-Product Attention  <!-- image -->  Figure 2: (left) Scaled Dot-Product Attention. (right) Multi-Head Atten
+
+[web (building effective agents via Firecrawl)] query='workflows agents' hits=2
+  source: https://www.anthropic.com/engineering/building-effective-agents
+  sha256: 2bc395e6cb613b32...  score: -4.78
+  excerpt: ## What are agents?  "Agent" can be defined in several ways. Some customers define agents as fully autonomous systems th
+query='agentmemory' master-doc hits=0
+query='Firecrawl Docling' master-doc hits=0
+query='capsule isolation' master-doc hits=0
+query='SQLite' master-doc hits=0
+[plain text (master research doc)] query="RESYNTH master document" hits=1
+  source: C:\Users\marku\OneDrive\Documents\GitHub\Agent-Brain\MASTER_AI_System_Research.md
+  sha256: 8a059e27679a70dc...  score: -13.91
+  excerpt: # Master Document: my_ai_system
+
+> [!abstract] Methodology
+> This master document was produced with the RESYNTH five sta
