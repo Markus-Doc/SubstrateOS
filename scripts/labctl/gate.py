@@ -38,6 +38,12 @@ class GateStage:
     detail: str
 
 
+def _tail(text: str, lines: int = 10) -> str:
+    """Last lines of tool output, ASCII-safe for Windows cp1252 consoles."""
+    tail = "\n".join(text.strip().splitlines()[-lines:])
+    return tail.encode("ascii", errors="replace").decode("ascii")
+
+
 def _build_patterns() -> list[tuple[str, re.Pattern[str]]]:
     """Compile secret-detection patterns.
 
@@ -114,9 +120,10 @@ def scan_secrets(root: Path) -> GateStage:
         )
         if proc.returncode == 0:
             return GateStage("secret-scan", True, "gitleaks: no leaks found")
-        tail = "\n".join(proc.stderr.strip().splitlines()[-5:])
         return GateStage(
-            "secret-scan", False, f"gitleaks exit {proc.returncode}: {tail}"
+            "secret-scan",
+            False,
+            f"gitleaks exit {proc.returncode}: {_tail(proc.stderr, 5)}",
         )
     return _fallback_scan(root)
 
@@ -132,8 +139,9 @@ def run_ruff(root: Path) -> GateStage:
     )
     if proc.returncode == 0:
         return GateStage("lint", True, "ruff: clean")
-    tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-10:])
-    return GateStage("lint", False, f"ruff exit {proc.returncode}: {tail}")
+    return GateStage(
+        "lint", False, f"ruff exit {proc.returncode}: {_tail(proc.stdout + proc.stderr)}"
+    )
 
 
 def run_pytest(root: Path, args: list[str] | None = None) -> GateStage:
@@ -151,8 +159,9 @@ def run_pytest(root: Path, args: list[str] | None = None) -> GateStage:
     if proc.returncode == 0:
         summary = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else "passed"
         return GateStage("tests", True, f"pytest: {summary}")
-    tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-10:])
-    return GateStage("tests", False, f"pytest exit {proc.returncode}: {tail}")
+    return GateStage(
+        "tests", False, f"pytest exit {proc.returncode}: {_tail(proc.stdout + proc.stderr)}"
+    )
 
 
 def _skip(name: str, tool: str) -> GateStage:
@@ -191,8 +200,9 @@ def run_semgrep(root: Path) -> GateStage:
     )
     if proc.returncode == 0:
         return GateStage("sast", True, "semgrep: no findings")
-    tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-10:])
-    return GateStage("sast", False, f"semgrep exit {proc.returncode}: {tail}")
+    return GateStage(
+        "sast", False, f"semgrep exit {proc.returncode}: {_tail(proc.stdout + proc.stderr)}"
+    )
 
 
 def run_trivy(root: Path) -> GateStage:
@@ -210,8 +220,9 @@ def run_trivy(root: Path) -> GateStage:
     )
     if proc.returncode == 0:
         return GateStage("vuln-scan", True, "trivy: no HIGH/CRITICAL findings")
-    tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-10:])
-    return GateStage("vuln-scan", False, f"trivy exit {proc.returncode}: {tail}")
+    return GateStage(
+        "vuln-scan", False, f"trivy exit {proc.returncode}: {_tail(proc.stdout + proc.stderr)}"
+    )
 
 
 def run_evals(root: Path) -> GateStage:
@@ -236,8 +247,9 @@ def run_evals(root: Path) -> GateStage:
     )
     if proc.returncode == 0:
         return GateStage("evals", True, "promptfoo: all assertions passed")
-    tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-10:])
-    return GateStage("evals", False, f"promptfoo exit {proc.returncode}: {tail}")
+    return GateStage(
+        "evals", False, f"promptfoo exit {proc.returncode}: {_tail(proc.stdout + proc.stderr)}"
+    )
 
 
 def run_gate(

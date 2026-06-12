@@ -269,6 +269,7 @@ def _spawn_claude(mission: str, cwd: Path) -> subprocess.Popen[str]:
     # shim mangles multiline argv at newlines, silently dropping every flag
     # after the first newline (observed: permissions flag lost, writes denied).
     env = clean_claude_env()
+    # nosemgrep: python.lang.compatibility.python36.python36-compatibility-Popen1, python.lang.compatibility.python36.python36-compatibility-Popen2 -- project requires Python >= 3.11
     proc = subprocess.Popen(
         [
             claude,
