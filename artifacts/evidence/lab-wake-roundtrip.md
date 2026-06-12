@@ -41,3 +41,28 @@ magic packet, boots, auto-pulls main, claude (Max) and gh auth intact.
 - Already healthy, verified: netplan `wakeonlan: true` (WoL persistence),
   Tailscale up (keys valid to 2026-11-20), unattended-upgrades active, NTP
   synced, 857G free.
+
+## Addendum (same day): suspend-only lifecycle + boot-to-agent
+
+Wake-from-S5 proved unreliable in repeat testing (one success, then two
+failures needing the physical power button) — BIOS-level, not fixable from
+the OS. Policy changed to **suspend-only** (ADR-017 §5):
+
+```
+$ labctl lab sleep
+suspend sent to substrate-lab (resume with `labctl lab wake`)
+$ labctl lab wake --wait     # subnet-directed broadcast, burst of 3
+lab host is reachable        # 16.3s
+$ labctl lab sleep && labctl lab wake --wait
+lab host is reachable        # 16.1s  (repeatable)
+```
+
+Root cause of flaky wakes: 255.255.255.255 leaves a nondeterministic
+interface on the multi-homed control plane; LAB_WOL_BROADCAST now pins the
+subnet-directed broadcast.
+
+Boot-to-agent verified end to end: `substrateos-agent.service` pulls the
+repo and starts `claude --dangerously-skip-permissions` in tmux session
+`substrateos` at every boot. After a cold boot the standing session answered
+the liveness prompt unaided, and the same session (created at boot) survived
+two suspend/resume cycles intact.

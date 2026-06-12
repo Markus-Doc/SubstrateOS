@@ -101,8 +101,18 @@ def send_wol(
     mac: str,
     broadcast: str = "255.255.255.255",
     sender: Callable[[bytes, tuple[str, int]], None] | None = None,
+    count: int = 3,
+    gap_seconds: float = 0.3,
 ) -> None:
-    (sender or _udp_broadcast)(magic_packet(mac), (broadcast, WOL_PORT))
+    """Send the magic packet `count` times: single packets are occasionally
+    lost right after suspend on this NIC (observed live); WoL is idempotent
+    so a small burst costs nothing and makes wake reliable."""
+    packet = magic_packet(mac)
+    send = sender or _udp_broadcast
+    for i in range(count):
+        if i:
+            time.sleep(gap_seconds)
+        send(packet, (broadcast, WOL_PORT))
 
 
 # --- ssh plumbing -----------------------------------------------------------
@@ -202,6 +212,25 @@ def wait_for_ssh(
         if clock() >= deadline:
             return False
         sleep(interval)
+
+
+# --- sleep ------------------------------------------------------------------
+
+# Suspend (S3), never poweroff: wake-from-suspend is reliable on this
+# hardware, wake-from-S5 is not (ADR-017 amendment, 2026-06-12). The command
+# detaches before suspending so the ssh round trip exits cleanly.
+SLEEP_COMMAND = 'nohup sh -c "sleep 1; sudo -n systemctl suspend" >/dev/null 2>&1 & exit 0'
+
+
+def sleep_host(
+    config: LabConfig,
+    runner: Callable[..., subprocess.CompletedProcess] | None = None,
+) -> None:
+    """Suspend the lab host (resume later with `labctl lab wake`)."""
+    proc = _run_ssh(_ssh_argv(config.ssh_host, SLEEP_COMMAND), runner)
+    if proc.returncode != 0:
+        detail = (proc.stderr or "").strip() or f"ssh exited {proc.returncode}"
+        raise LabError(f"lab sleep failed on {config.ssh_host!r}: {detail}")
 
 
 # --- sync -------------------------------------------------------------------
