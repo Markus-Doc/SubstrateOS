@@ -2,11 +2,15 @@
 
 ## Project
 SubstrateOS (formerly Agent Brain). Local-first AI orchestration harness.
-Phase 1 of 3. Build phase: Lab Controller CLI, ingestion, memory, status dashboard.
+Phase 2 of 3: performance, scale, and the Lab execution host.
 
 ## Scope Right Now
-Phase 1 build authorized (2026-06-11). Build target is the labctl package under
-scripts/, per docs/planning/phase-1-build-prompt.md and the approved build plan.
+Phase 1 complete (2026-06-12; see docs/planning/phase-1-retrospective.md).
+Phase 2 plan approved 2026-06-12: docs/planning/phase-2-plan.md — six
+milestones (inherited debt, Lab host integration, hybrid retrieval,
+in-container capsule execution, Dynamic Workflows + SubstrateOS-audit
+capstone, close-out), executed as one autonomous campaign per ADR-010.
+Build target remains the labctl package under scripts/.
 
 ## Core Rules
 - Treat MASTER_AI_System_Research.md (repo root) as the master research document (ADR-008).
