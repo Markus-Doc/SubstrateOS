@@ -97,8 +97,8 @@ verified from the control plane.
 
 ### Milestone 4: In-Container Capsule Execution (ADR-015's deferred first job)
 
-Remaining prerequisite: Docker is not installed on the Lab box and requires
-sudo — install it (owner action or supervised session) before this milestone.
+Prerequisite cleared 2026-06-12: Docker 29.1.3 installed and verified on the
+Lab box during the dial-in (ADR-017 amendment).
 
 - [ ] Capsule image gets the claude CLI; auth per locked decision 2 — OAuth
       token injected as an env var at container launch, never written to a

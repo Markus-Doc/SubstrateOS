@@ -26,9 +26,14 @@ Concretely:
    the environment or the gitignored `.env` (`LAB_SSH_HOST`, `LAB_WOL_MAC`,
    `LAB_WOL_BROADCAST`, `LAB_REMOTE_REPO`). No host, MAC, or IP in tracked
    files.
-3. Provisioning is **sudo-free into `~/.local/bin`** (the operator account has
-   no sudo): claude via the native installer, gh via release tarball. All ssh
-   from labctl is `BatchMode=yes` — never interactive, never password.
+3. Provisioning is **sudo-free into `~/.local/bin`** for the agent CLIs:
+   claude via the native installer, gh via release tarball. All ssh from
+   labctl is `BatchMode=yes` — never interactive, never password.
+   *Amended same day:* the operator account turned out to have passwordless
+   sudo after all; root was used for box dial-in only (lid-switch ignore +
+   sleep targets masked, WiFi driver blacklisted, ufw enabled with ssh +
+   tailscale allows, Docker installed — unblocking M4). The agent-CLI layer
+   stays user-level as decided.
 4. The wake-into-current-OS guarantee is a user crontab entry,
    `@reboot sleep 30 && git -C ~/SubstrateOS pull --ff-only`, plus
    `labctl lab sync` for on-demand refresh.
@@ -56,8 +61,8 @@ project as if at the main PC.
   subscription plans draws from a separate monthly Agent SDK credit bucket;
   every dispatch is metered and an exhausted bucket means stop-and-report,
   never an API-key fallback.
-- In-container capsule execution on the box still needs Docker there (not
-  installed; requires sudo) — it stays a remaining Phase 2 item, not part of
-  the operator bring-up.
+- In-container capsule execution on the box is unblocked: Docker 29.1.3 was
+  installed during the same-day dial-in (see amendment above) and
+  hello-world verified.
 - Remote *trigger* pathways (messaging-initiated wake/dispatch) are an open
   question, recorded as OQ-007; nothing is built for them yet.
