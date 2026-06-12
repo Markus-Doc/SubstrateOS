@@ -27,6 +27,6 @@ a hybrid backend would slot in.
 - `labctl ingest` indexes chunks directly via `SQLiteMemory`; no daemon runs.
 - Exposing the same store to agents over MCP (or swapping in agentmemory) is
   a provider change, not an architecture change.
-- The Week 1 checklist item "agentmemory MCP server installed and
+- The Milestone 1 checklist item "agentmemory MCP server installed and
   smoke-tested" is superseded by this provider until multi-agent access is
   actually needed.
