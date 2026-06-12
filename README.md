@@ -53,10 +53,15 @@ Tool readiness landed 2026-06-12: gitleaks, Trivy, Semgrep (WSL), Docling and
 Firecrawl installed and smoke-tested; the release gate now runs six stages —
 secret scan, lint, tests, SAST, vuln scan, and a promptfoo eval (ADR-012) —
 with `labctl gate --strict` for pre-publish runs.
-Remaining Phase 1 work: multi-source ingestion (PDF/web), capsule launch,
-token budget circuit breaker. Milestone-gated, no calendar deadlines; the
-remaining work is one autonomous Fable 5 build campaign (ADR-010).
-See docs/planning/phase-1-plan.md.
+Phase 1 completed 2026-06-12 (autonomous campaign per ADR-010): multi-source
+ingestion (text/PDF/web via Docling and Firecrawl), review queue with human
+promotion, capsule lifecycle (`labctl new` / `labctl build`) with a live-fired
+token budget circuit breaker, and the Milestone 4 capstone — the OQ-006
+research dashboard built end to end through the harness and pushed to a
+private repo with gitleaks/Semgrep/Trivy green.
+See docs/planning/phase-1-plan.md and docs/planning/phase-1-retrospective.md.
+Next: Phase 2 (in-container capsule execution, vector retrieval on the Lab
+machine).
 Stack: Python (Typer) Lab CLI, SQLite FTS5 memory (ADR-009), Claude Code.
 
 ## Repo Structure

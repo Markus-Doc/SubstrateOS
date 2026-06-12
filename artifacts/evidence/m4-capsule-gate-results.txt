@@ -1,0 +1,6 @@
+capsule: research-dashboard
+tests: 39 passed (python -m unittest discover -s tests)
+gitleaks: no leaks found (5 commits, exit 0)
+semgrep (WSL, --config auto --error): exit 0
+trivy fs (HIGH/CRITICAL): exit 0
+build: run-20260612T042917Z.jsonl, 154685 tokens / 2000000 budget

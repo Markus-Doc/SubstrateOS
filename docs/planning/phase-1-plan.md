@@ -28,6 +28,20 @@ checks. ADR-012/ADR-013 recorded; CLAUDE.md memory section corrected to match
 ADR-009 reality. Remaining work below is the ADR-010 autonomous campaign,
 starting from a fully provisioned machine.
 
+## Progress: completion campaign 2026-06-12 (M2-M4)
+
+One autonomous campaign (ADR-010) closed every remaining checklist item:
+source-type dispatch in `labctl ingest` (PDF via Docling, web via Firecrawl
+behind the ADR-005 provider interface), the review queue exercised end to end
+with a real human-approved claude summary, the capsule lifecycle
+(`labctl new`/`labctl build`, ADR-014/015) with the token budget circuit
+breaker fired live (ADR-016), and the Milestone 4 capstone built through the
+harness and pushed to the private repo Markus-Doc/research-dashboard with
+gitleaks/Semgrep/Trivy green. Three real harness bugs were found and fixed by
+the failed capstone attempts (stale ANTHROPIC_API_KEY override, inherited
+CLAUDE_CODE_* restricting nested sessions, Windows cmd-shim argv mangling) —
+see ADR-015 and the retrospective.
+
 ## Objective
 
 Establish the Idea to Repo workflow end to end using existing tools.
@@ -78,10 +92,10 @@ with all security gates passing.
 
 ### Milestone 4: First Full Build and Audit
 
-- [ ] Personal research dashboard built end to end inside a capsule
-- [ ] Gitleaks, Semgrep, and Trivy all pass on the output
-- [ ] Build log and evidence committed to artifacts/
-- [ ] Phase 1 retrospective written and committed to docs/planning/
+- [x] Personal research dashboard built end to end inside a capsule (2026-06-12: `labctl new research-dashboard`, 21 OQ-006 sources ingested into its namespace, `labctl build` produced the full package in 23 turns / 154,685 tokens; its 39 stdlib unittest tests pass; pushed to private repo Markus-Doc/research-dashboard, MIT, no PII)
+- [x] Gitleaks, Semgrep, and Trivy all pass on the output (artifacts/evidence/m4-capsule-gate-results.txt)
+- [x] Build log and evidence committed to artifacts/ (m4-build-run-log.jsonl, m4-build-usage-stats.txt, m4-* transcripts)
+- [x] Phase 1 retrospective written and committed to docs/planning/
 
 ## Out of Scope for Phase 1
 
