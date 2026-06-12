@@ -141,6 +141,23 @@ def _check_firecrawl_key(root: Path) -> CheckResult:
     )
 
 
+def _check_lab_config(root: Path) -> CheckResult:
+    """Lab operator config present (ADR-017) — report presence, never values."""
+    from labctl.lab import load_lab_config
+
+    config = load_lab_config(root)
+    if config.wol_mac:
+        return CheckResult(
+            "lab-config", True, "warning", f"host {config.ssh_host}; WoL MAC set"
+        )
+    return CheckResult(
+        "lab-config",
+        False,
+        "warning",
+        "LAB_WOL_MAC not set in environment or .env (lab wake unavailable)",
+    )
+
+
 def run_checks(root: Path) -> list[CheckResult]:
     return [
         _check_python(),
@@ -155,6 +172,7 @@ def run_checks(root: Path) -> list[CheckResult]:
         _check_cli_tool("node", "evals stage skipped"),
         _check_docling(),
         _check_firecrawl_key(root),
+        _check_lab_config(root),
     ]
 
 

@@ -17,6 +17,7 @@ secrets/
 # Capsule outputs
 artifacts/outputs/
 artifacts/logs/
+artifacts/lab-runs/
 
 # Local-only memory and ingestion state (per README)
 artifacts/memory.sqlite
