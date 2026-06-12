@@ -68,6 +68,19 @@ Workflows, capstoned by a codebase-wide audit of SubstrateOS itself through
 the harness. Hybrid retrieval is deferred behind `MemoryProvider` (ADR-017).
 Stack: Python (Typer) Lab CLI, SQLite FTS5 memory (ADR-009), Claude Code.
 
+## Remote trigger (ADR-018)
+
+Message the Lab box from anywhere: a Telegram message arrives → the box wakes
+on its RTC duty cycle → the mission executes through the standard capsule
+machinery → the result is reported back on the same chat. Six chat commands:
+`/status`, `/run <mission>`, `/usage`, `/sleep`, `/stay <minutes>`, `/help`.
+Configuration lives in the gitignored `.env`: `TRIGGER_TELEGRAM_TOKEN` (bot
+token) and `TRIGGER_ALLOWED_USER_IDS` (numeric-id allowlist). The box wakes,
+drains the queue, and re-suspends on a fixed interval, so worst-case command
+latency equals the wake interval (default 10 minutes); `/stay` keeps it
+awake. Install on the box with `labctl trigger install` (unit template in
+`templates/trigger-systemd/`); threat model in SECURITY.md.
+
 ## Repo Structure
 
 - docs/research/      Source of truth research documents

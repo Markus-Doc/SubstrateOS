@@ -18,6 +18,7 @@ secrets/
 artifacts/outputs/
 artifacts/logs/
 artifacts/lab-runs/
+artifacts/trigger-runs/
 
 # Local-only memory and ingestion state (per README)
 artifacts/memory.sqlite

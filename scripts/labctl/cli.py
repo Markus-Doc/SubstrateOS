@@ -15,6 +15,7 @@ from labctl import doctor as doctor_mod
 from labctl import gate as gate_mod
 from labctl import lab as lab_mod
 from labctl import review as review_mod
+from labctl import trigger as trigger_mod
 from labctl import usage as usage_mod
 from labctl.config import find_repo_root, init_project, load_manifest
 from labctl.ingest import ingest_source
@@ -29,6 +30,10 @@ review_app = typer.Typer(no_args_is_help=True, add_completion=False)
 app.add_typer(review_app, name="review", help="Review queue for AI-derived content.")
 lab_app = typer.Typer(no_args_is_help=True, add_completion=False)
 app.add_typer(lab_app, name="lab", help="Lab host operator: wake, status, sync, dispatch.")
+trigger_app = typer.Typer(no_args_is_help=True, add_completion=False)
+app.add_typer(
+    trigger_app, name="trigger", help="Remote trigger: Telegram channel + RTC duty cycle (ADR-018)."
+)
 
 
 def _root() -> Path:
@@ -276,6 +281,101 @@ def lab_dispatch(
         typer.echo(f"dispatch exited non-zero: {result.exit_code}", err=True)
         raise typer.Exit(code=result.exit_code)
     typer.echo("dispatch completed within budget")
+
+
+def _trigger_config(root: Path) -> trigger_mod.TriggerConfig:
+    try:
+        return trigger_mod.load_trigger_config(root)
+    except trigger_mod.TriggerError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+
+@trigger_app.command("status")
+def trigger_status(
+    probe: bool = typer.Option(False, "--probe", help="Attempt one getMe API call."),
+) -> None:
+    """Local trigger configuration and state (no network unless --probe)."""
+    root = _root()
+    config = _trigger_config(root)
+    deadline = trigger_mod.inhibit_until(root)
+    typer.echo(f"token: {'set' if config.token else 'MISSING'}")
+    typer.echo(f"allowlist: {len(config.allowed_user_ids)} user id(s)")
+    typer.echo(
+        f"poll timeout: {config.poll_timeout}s  wake interval: "
+        f"{config.wake_interval_min} min  linger: {config.linger_seconds}s"
+    )
+    typer.echo(f"token budget: {config.token_budget}")
+    typer.echo(
+        f"inhibit: {deadline.strftime(trigger_mod.UTC_FORMAT) if deadline else 'none'}"
+    )
+    typer.echo(f"offset: {trigger_mod.read_offset(root)}")
+    if probe:
+        if not config.token:
+            typer.echo("probe: FAIL (TRIGGER_TELEGRAM_TOKEN missing)", err=True)
+            raise typer.Exit(code=1)
+        try:
+            me = trigger_mod.api_call(config.token, "getMe", {})
+        except trigger_mod.TriggerError as exc:
+            typer.echo(f"probe: FAIL {exc}", err=True)
+            raise typer.Exit(code=1) from exc
+        username = me.get("username", "unknown") if isinstance(me, dict) else "unknown"
+        typer.echo(f"probe: ok (bot @{username})")
+
+
+@trigger_app.command("listen")
+def trigger_listen(
+    once: bool = typer.Option(False, "--once", help="Drain one batch and exit."),
+) -> None:
+    """Drain the Telegram queue without ever suspending (dev / always-on mode)."""
+    root = _root()
+    config = _trigger_config(root)
+    if not config.token:
+        typer.echo("trigger not configured (TRIGGER_TELEGRAM_TOKEN missing)")
+        return
+    try:
+        processed = trigger_mod.run_listen(root, config, iterations=1 if once else None)
+    except trigger_mod.TriggerError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"processed: {processed}")
+
+
+@trigger_app.command("cycle")
+def trigger_cycle(
+    once: bool = typer.Option(False, "--once", help="Run one duty cycle and exit."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Report instead of suspending."),
+) -> None:
+    """Full duty cycle: listen window, guards, RTC-armed suspend (ADR-018)."""
+    root = _root()
+    config = _trigger_config(root)
+    if not config.token:
+        typer.echo("trigger not configured (TRIGGER_TELEGRAM_TOKEN missing)")
+        return
+    try:
+        outcome = trigger_mod.run_cycle(
+            root, config, dry_run=dry_run, iterations=1 if once else None
+        )
+    except trigger_mod.TriggerError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    if outcome is not None:
+        typer.echo(f"suspended: {outcome['suspended']}")
+        if outcome.get("reason"):
+            typer.echo(f"reason: {outcome['reason']}")
+
+
+@trigger_app.command("install")
+def trigger_install() -> None:
+    """Install + enable the systemd unit for the duty cycle (does not start it)."""
+    root = _root()
+    try:
+        actions = trigger_mod.install_systemd_unit(root)
+    except trigger_mod.TriggerError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    for action in actions:
+        typer.echo(action)
 
 
 @app.command()

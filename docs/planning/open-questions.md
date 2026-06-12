@@ -112,5 +112,11 @@ channel.
 Constraints already locked: subscription auth only (no API keys), no secrets
 in tracked files, the existing `labctl lab` surface stays the execution path.
 
-Status: OPEN — explicitly TBD by the owner (2026-06-12). Build nothing for
-this until a channel is chosen.
+Status: CLOSED
+Resolved: Telegram bot via outbound long-polling (no inbound exposure) as the
+channel; RTC self-wake duty cycle (`rtcwake -m mem`, default 10-minute
+interval) instead of a WoL relay — no always-on relay device exists, so the
+box wakes itself, drains the queue, executes, re-suspends; Tailscale (already
+enrolled on box + iPhone) with Tailscale SSH as the direct command tunnel.
+Control-plane WoL unchanged. Full rationale and threat-model delta: ADR-018.
+Date: 2026-06-12
