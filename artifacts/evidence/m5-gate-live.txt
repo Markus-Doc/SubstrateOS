@@ -1,0 +1,4 @@
+[PASS] secret-scan: fallback scanner: no secrets found in tracked files
+[PASS] lint: ruff: clean
+[PASS] tests: pytest: 36 passed in 1.86s
+gate: all stages passed

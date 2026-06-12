@@ -1,5 +1,5 @@
 {
-	// Agent Brain capsule devcontainer template.
+	// SubstrateOS capsule devcontainer template.
 	// Tokens of the form __NAME__ are substituted by the Lab Controller at scaffold time.
 	"name": "capsule-${localWorkspaceFolderBasename}",
 	"build": {

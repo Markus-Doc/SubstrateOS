@@ -1,4 +1,4 @@
-# Agent Brain capsule base image.
+# SubstrateOS capsule base image.
 # Minimal by design: capsules install their own project dependencies.
 FROM python:3.11-slim
 

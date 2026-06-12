@@ -1,4 +1,4 @@
-"""labctl: Agent Brain Lab Controller CLI.
+"""labctl: SubstrateOS Lab Controller CLI.
 
 Commands per ADR-006: init, status, ingest, doctor (plus gate for the release gate).
 Commands are registered as their milestones land; unimplemented ones do not exist.

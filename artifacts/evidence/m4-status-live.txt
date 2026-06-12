@@ -1,0 +1,39 @@
+============================================================
+ Agent Brain - phase 1
+============================================================
+source of truth : MASTER_AI_System_Research.md [present]
+
+confirmed decisions (8):
+  [Accepted] ADR-001: SQLite over Postgres for Phase 1 Memory Backend
+  [Accepted] ADR-002: No LangChain, LangGraph, or AutoGen
+  [Accepted] ADR-003: MCP Memory Server as the Memory Interface
+  [Accepted] ADR-004: agentmemory as Optional Provider, Not Source of Truth
+  [Accepted] ADR-005: Firecrawl Cloud API, Optional and Metered
+  [Accepted] ADR-006: Lab Controller as Python Typer CLI
+  [Accepted] ADR-007: Devcontainers — WSL2 First, Remote Linux Later
+  [Accepted] ADR-008: MASTER_AI_System_Research.md promoted to master research document
+
+open questions (6/6 closed):
+  [closed] OQ-001: Lab Host Environment
+  [closed] OQ-002: agentmemory MCP Implementation
+  [closed] OQ-003: Firecrawl Deployment
+  [closed] OQ-004: Lab Controller Shell Target
+  [closed] OQ-005: Devcontainer Runtime
+  [closed] OQ-006: Phase 1 Dashboard Scope
+
+providers:
+  memory      : sqlite
+  ingest_web  : unconfigured (firecrawl optional, ADR-005)
+  execution   : claude-code
+
+missing configuration:
+  - provider 'ingest_web': unconfigured (firecrawl optional, ADR-005)
+
+last ingestion run:
+  2026-06-11T10:46:14Z  artifacts\ingest\agent-brain\MASTER_AI_System_Research.md  (chunks: 25, sha256: 8a059e27679a...)
+
+environment warnings:
+  none
+
+next recommended actions:
+  -> all green - proceed with phase plan

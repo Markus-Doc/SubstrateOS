@@ -1,4 +1,4 @@
-# System Overview: Agent Brain Architecture
+# System Overview: SubstrateOS Architecture
 
 ## Core Principle
 

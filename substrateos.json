@@ -1,7 +1,7 @@
 {
-  "project": "Agent Brain",
+  "project": "SubstrateOS",
   "phase": "1",
-  "namespace": "agent-brain",
+  "namespace": "substrateos",
   "source_of_truth": "MASTER_AI_System_Research.md",
   "providers": {
     "memory": "sqlite",

@@ -17,7 +17,7 @@ def in_repo(repo: Path, monkeypatch):
 def test_init_then_doctor(in_repo: Path):
     result = runner.invoke(app, ["init"])
     assert result.exit_code == 0
-    assert "Agent Brain" in result.output
+    assert "SubstrateOS" in result.output
 
     result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 0

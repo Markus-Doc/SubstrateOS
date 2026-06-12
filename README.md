@@ -1,4 +1,4 @@
-# Agent Brain
+# SubstrateOS
 
 A thin, local-first AI orchestration harness. Not a platform.
 
@@ -39,7 +39,7 @@ from. Ingested output lands in `artifacts/ingest/`, memory in
 
 ## What This Is
 
-Agent Brain is a disciplined harness that glues together existing high-performance tools
+SubstrateOS (formerly Agent Brain) is a disciplined harness that glues together existing high-performance tools
 (Claude Code, agentmemory MCP, Docling, Firecrawl) into a repeatable "Idea to Repo" workflow.
 
 The core principle is **Shared Brain, Isolated Capsules**: centralised long-term knowledge,
