@@ -129,6 +129,35 @@ Lab box during the dial-in (ADR-017 amendment).
       as engineering/code-quality audits, not pentest language (master doc:
       cyber-classifier rerouting)
 
+### Milestone 7: Remote Trigger Pathway (OQ-007 → ADR-018; owner-directed 2026-06-12)
+
+Inserted by owner direction: message the box from anywhere → it wakes →
+SubstrateOS executes → result reported back on the same channel. Channel,
+wake design, and tunnel locked by the owner; see ADR-018.
+
+- [x] `labctl trigger` command group (`cycle`, `listen`, `status`) in
+      `scripts/labctl/trigger.py`: Telegram long-poll transport (stdlib
+      urllib, injectable for tests), numeric-user-id allowlist, command
+      grammar (`/status`, `/run <mission>`, `/usage`, `/sleep`,
+      `/stay <minutes>`, `/help`), audit log of every update with its
+      allow/deny verdict under `artifacts/trigger-runs/` (gitignored)
+- [x] Missions execute via the established ADR-015/016 machinery: mission on
+      stdin, stream-json metering, circuit breaker, run logs in
+      `artifacts/trigger-runs/`
+- [x] RTC self-wake duty cycle: listen window → suspend guards (no active
+      mission, no interactive login session, no inhibit marker) →
+      `rtcwake -m mem -s <interval>`; any resume (RTC or WoL) returns to the
+      same loop. S3 only, never poweroff
+- [x] systemd unit template + documented install; survives reboot and resume
+- [x] Tailscale SSH enabled on the box as the direct command/emergency path
+- [x] Secrets only in gitignored `.env` (`TRIGGER_TELEGRAM_TOKEN`,
+      `TRIGGER_ALLOWED_USER_IDS`); SECURITY.md threat-model delta recorded
+- [x] Deterministic tests (fake transport/clock/suspend; no network, no AI
+      runtime); suite green; `labctl gate --strict` all-PASS
+- [ ] Live verification: owner sends `/status` and a small `/run` from his
+      phone; one full suspend → RTC wake → drain → reply cycle evidenced in
+      `artifacts/evidence/`
+
 ### Milestone 6: Close-Out
 
 - [ ] Plan ticked; Phase 2 retrospective; completion report with evidence

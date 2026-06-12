@@ -11,9 +11,10 @@ operator, not a compute node — `labctl lab` (wake/status/sync/dispatch)
 landed and the box is provisioned with subscription auth only. Remaining
 campaign tail per docs/planning/phase-2-plan.md: M1 inherited debt,
 in-container capsule execution (needs Docker on the box), Dynamic Workflows
-+ SubstrateOS-audit capstone, close-out. Hybrid retrieval is deferred behind
-MemoryProvider (ADR-017). Remote trigger pathways are OQ-007 — build nothing
-for them. Build target remains the labctl package under scripts/.
++ SubstrateOS-audit capstone, M7 remote trigger pathway (OQ-007 resolved by
+ADR-018: Telegram long-poll + RTC self-wake duty cycle + Tailscale SSH),
+close-out. Hybrid retrieval is deferred behind MemoryProvider (ADR-017).
+Build target remains the labctl package under scripts/.
 
 ## Core Rules
 - Treat MASTER_AI_System_Research.md (repo root) as the master research document (ADR-008).
