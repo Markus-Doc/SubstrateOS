@@ -1,4 +1,4 @@
-# Phase 1 Plan: The Core Loop (Weeks 1-4)
+# Phase 1 Plan: The Core Loop
 
 ## Progress: autonomous build run 2026-06-11
 
@@ -14,12 +14,20 @@ summary in artifacts/phase-1-completion-report.md.
 
 Not yet done from the original checklist: Docling install, Firecrawl setup,
 multi-source ingestion (PDF/web), `lab build` capsule launch, token budget
-circuit breaker, Semgrep/Trivy, the Week 4 end-to-end dashboard-project build.
+circuit breaker, Semgrep/Trivy, the Milestone 4 end-to-end dashboard-project build.
 Checklist below updated to reflect actual state.
 
 ## Objective
 
 Establish the Idea to Repo workflow end to end using existing tools.
+
+## Execution Model (ADR-010)
+
+No calendar deadlines. Milestones are gated by their checklists being done and
+verified, never by dates or "weeks". The remaining Phase 1 work is executed by
+Claude (Fable 5) as an autonomous build run — loop-driven (/loop, dynamic
+pacing), using agents and subagents where they genuinely help — carrying the
+checklist through to completion rather than stopping at a time box.
 
 ## Success Metric
 
@@ -35,7 +43,7 @@ with all security gates passing.
 
 ## Task Breakdown
 
-### Week 1: Skeleton and Tooling
+### Milestone 1: Skeleton and Tooling
 
 - [x] Repo foundation committed (this scaffold)
 - [x] Open questions resolved (see docs/planning/open-questions.md)
@@ -43,21 +51,21 @@ with all security gates passing.
 - [ ] Docling and Firecrawl confirmed working on the Lab machine
 - [x] .devcontainer base config created for a test capsule (templates/capsule-devcontainer/, build-validated in WSL2)
 
-### Week 2: Ingestion Pipeline
+### Milestone 2: Ingestion Pipeline
 
 - [ ] Ingest at least three research sources (PDF, web page, plain text) — 1/3 so far (master doc, plain text)
 - [x] All outputs normalised to Markdown with provenance metadata
 - [x] Memory chunks stored with SHA256 hash and source URL
 - [ ] Review queue working: AI summaries held until manually approved (convention implemented; not yet exercised with real AI summaries)
 
-### Week 3: Lab Controller CLI (Minimal)
+### Milestone 3: Lab Controller CLI (Minimal)
 
 - [ ] `lab new <project-name>` scaffolds a capsule directory and Devcontainer
 - [ ] `lab ingest <source>` runs the ingestion pipeline for a source
 - [ ] `lab build <project-name>` launches Claude Code in the capsule context
 - [ ] Token budget circuit breaker fires correctly on a test run
 
-### Week 4: First Full Build and Audit
+### Milestone 4: First Full Build and Audit
 
 - [ ] Personal research dashboard built end to end inside a capsule
 - [ ] Gitleaks, Semgrep, and Trivy all pass on the output
