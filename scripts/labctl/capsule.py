@@ -252,6 +252,12 @@ def _kill_build(proc: subprocess.Popen[str]) -> None:
     proc.wait()
 
 
+BUILD_INSTRUCTION = (
+    "Your build mission for this repository is provided on stdin. Execute it "
+    "end to end."
+)
+
+
 def _spawn_claude(mission: str, cwd: Path) -> subprocess.Popen[str]:
     claude = shutil.which("claude")
     if claude is None:
@@ -259,18 +265,22 @@ def _spawn_claude(mission: str, cwd: Path) -> subprocess.Popen[str]:
     # --dangerously-skip-permissions reflects the owner's standing authorisation
     # on this machine (ADR-015); end-users would run under their own permission
     # model. --verbose is required by claude for stream-json in print mode.
+    # The mission travels on stdin, never argv: on Windows the npm claude.CMD
+    # shim mangles multiline argv at newlines, silently dropping every flag
+    # after the first newline (observed: permissions flag lost, writes denied).
     env = clean_claude_env()
-    return subprocess.Popen(
+    proc = subprocess.Popen(
         [
             claude,
             "-p",
-            mission,
+            BUILD_INSTRUCTION,
             "--dangerously-skip-permissions",
             "--output-format",
             "stream-json",
             "--verbose",
         ],
         cwd=cwd,
+        stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
@@ -278,6 +288,10 @@ def _spawn_claude(mission: str, cwd: Path) -> subprocess.Popen[str]:
         errors="replace",
         env=env,
     )
+    assert proc.stdin is not None
+    proc.stdin.write(mission)
+    proc.stdin.close()
+    return proc
 
 
 def run_build(
