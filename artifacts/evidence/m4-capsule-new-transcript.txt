@@ -1,0 +1,2 @@
+capsule scaffolded: C:\Users\marku\OneDrive\Documents\GitHub\research-dashboard
+namespace: research-dashboard  token budget: 2000000

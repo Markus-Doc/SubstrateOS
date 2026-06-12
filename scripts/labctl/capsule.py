@@ -24,6 +24,21 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 CAPSULE_MANIFEST_NAME = "capsule.json"
+
+
+def clean_claude_env() -> dict[str, str]:
+    """Child environment for headless claude invocations (ADR-015).
+
+    Strips ANTHROPIC_API_KEY (a stale key overrides the CLI credential store)
+    and CLAUDECODE/CLAUDE_CODE_* (inherited when labctl itself runs inside a
+    Claude Code session; the child then treats itself as a restricted nested
+    session and auto-denies file writes even with permissions skipped).
+    """
+    return {
+        k: v
+        for k, v in os.environ.items()
+        if k != "ANTHROPIC_API_KEY" and k != "CLAUDECODE" and not k.startswith("CLAUDE_CODE_")
+    }
 TEMPLATE_DIR_REL = "templates/capsule-devcontainer"
 NAMESPACE_PARENT_REL = "artifacts/memory-namespaces"
 RUN_LOG_DIR_REL = ".substrateos/logs"
@@ -244,9 +259,7 @@ def _spawn_claude(mission: str, cwd: Path) -> subprocess.Popen[str]:
     # --dangerously-skip-permissions reflects the owner's standing authorisation
     # on this machine (ADR-015); end-users would run under their own permission
     # model. --verbose is required by claude for stream-json in print mode.
-    # Auth is delegated to the claude CLI's own credential store: an inherited
-    # ANTHROPIC_API_KEY would override it (ADR-015).
-    env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
+    env = clean_claude_env()
     return subprocess.Popen(
         [
             claude,

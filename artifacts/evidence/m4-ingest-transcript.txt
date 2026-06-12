@@ -1,0 +1,44 @@
+
+ingested: artifacts\ingest\research-dashboard\substrateos.md
+namespace: research-dashboard  chunks indexed: 1
+ingested: artifacts\ingest\research-dashboard\open-questions.md
+namespace: research-dashboard  chunks indexed: 7
+ingested: artifacts\ingest\research-dashboard\phase-1-plan.md
+namespace: research-dashboard  chunks indexed: 9
+ingested: artifacts\ingest\research-dashboard\ingest-log.md
+namespace: research-dashboard  chunks indexed: 1
+ingested: artifacts\ingest\research-dashboard\environment-health.md
+namespace: research-dashboard  chunks indexed: 1
+ingested: artifacts\ingest\research-dashboard\ADR-001-sqlite-over-postgres.md
+namespace: research-dashboard  chunks indexed: 5
+ingested: artifacts\ingest\research-dashboard\ADR-002-no-langchain.md
+namespace: research-dashboard  chunks indexed: 5
+ingested: artifacts\ingest\research-dashboard\ADR-003-mcp-memory-first.md
+namespace: research-dashboard  chunks indexed: 5
+ingested: artifacts\ingest\research-dashboard\ADR-004-agentmemory-not-source-of-truth.md
+namespace: research-dashboard  chunks indexed: 5
+ingested: artifacts\ingest\research-dashboard\ADR-005-firecrawl-cloud-api.md
+namespace: research-dashboard  chunks indexed: 5
+ingested: artifacts\ingest\research-dashboard\ADR-006-lab-controller-typer-cli.md
+namespace: research-dashboard  chunks indexed: 5
+ingested: artifacts\ingest\research-dashboard\ADR-007-devcontainer-wsl2-first.md
+namespace: research-dashboard  chunks indexed: 5
+ingested: artifacts\ingest\research-dashboard\ADR-008-master-research-promotion.md
+namespace: research-dashboard  chunks indexed: 5
+ingested: artifacts\ingest\research-dashboard\ADR-009-builtin-sqlite-memory-provider.md
+namespace: research-dashboard  chunks indexed: 4
+ingested: artifacts\ingest\research-dashboard\ADR-010-milestone-driven-agent-executed-plans.md
+namespace: research-dashboard  chunks indexed: 4
+ingested: artifacts\ingest\research-dashboard\ADR-011-rename-to-substrateos.md
+namespace: research-dashboard  chunks indexed: 4
+ingested: artifacts\ingest\research-dashboard\ADR-012-evaluation-layer-promptfoo.md
+namespace: research-dashboard  chunks indexed: 4
+ingested: artifacts\ingest\research-dashboard\ADR-013-dev-toolchain-control-plane.md
+namespace: research-dashboard  chunks indexed: 4
+ingested: artifacts\ingest\research-dashboard\ADR-014-capsule-sibling-directory.md
+namespace: research-dashboard  chunks indexed: 4
+ingested: artifacts\ingest\research-dashboard\ADR-015-host-scoped-lab-build.md
+namespace: research-dashboard  chunks indexed: 4
+ingested: artifacts\ingest\research-dashboard\ADR-016-token-budget-default.md
+namespace: research-dashboard  chunks indexed: 4
+
