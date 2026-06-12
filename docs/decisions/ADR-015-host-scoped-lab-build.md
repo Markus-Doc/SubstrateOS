@@ -6,8 +6,11 @@ Status: Accepted
 ## Decision
 
 `labctl build <project>` runs the build agent on the Windows host as
-`claude -p "<mission>" --dangerously-skip-permissions --output-format
-stream-json --verbose` with `cwd` set to the capsule workspace. In-container
+`claude -p --dangerously-skip-permissions --output-format stream-json
+--verbose` with `cwd` set to the capsule workspace and the mission text
+delivered on stdin (never argv: the Windows npm `claude.CMD` shim mangles
+multiline argv at newlines and silently drops every flag after the first
+newline, which cost two failed capstone runs before diagnosis). In-container
 execution (launching claude inside the capsule devcontainer) is deferred to
 Phase 2 on the Lab machine.
 
