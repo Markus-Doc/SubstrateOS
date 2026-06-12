@@ -18,6 +18,11 @@ secrets/
 artifacts/outputs/
 artifacts/logs/
 
+# Local-only memory and ingestion state (per README)
+artifacts/memory.sqlite
+artifacts/ingest/
+artifacts/run-meta.json
+
 # OS
 .DS_Store
 Thumbs.db

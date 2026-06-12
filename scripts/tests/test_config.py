@@ -18,7 +18,7 @@ def test_find_repo_root_walks_up(repo: Path):
 def test_init_creates_manifest_and_dirs(repo: Path):
     manifest, actions = init_project(repo)
     assert (repo / MANIFEST_NAME).exists()
-    assert manifest.project == "Agent Brain"
+    assert manifest.project == "SubstrateOS"
     for rel in REQUIRED_DIRS:
         assert (repo / rel).is_dir()
     assert actions  # first run does work

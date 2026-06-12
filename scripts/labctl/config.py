@@ -1,6 +1,6 @@
 """Repo root discovery and project manifest handling.
 
-The manifest (agentbrain.json at repo root) is the single project-state file
+The manifest (substrateos.json at repo root) is the single project-state file
 the dashboard and doctor read. Repo files remain the source of truth (ADR-004);
 the manifest only records project identity and provider configuration status.
 """
@@ -11,7 +11,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-MANIFEST_NAME = "agentbrain.json"
+MANIFEST_NAME = "substrateos.json"
 
 REQUIRED_DIRS = (
     "docs/decisions",
@@ -24,9 +24,9 @@ REQUIRED_DIRS = (
 
 @dataclass
 class Manifest:
-    project: str = "Agent Brain"
+    project: str = "SubstrateOS"
     phase: str = "1"
-    namespace: str = "agent-brain"
+    namespace: str = "substrateos"
     source_of_truth: str = "MASTER_AI_System_Research.md"
     providers: dict[str, str] = field(
         default_factory=lambda: {

@@ -1,0 +1,5 @@
+3 hits; top score -3.243
+## Orchestration Patterns and Delegation
+
+BuilderIO/skills (/efficient-fable, /efficient-frontier) is rated the single most on-target artefact for a personal frontier-AI workflow because it directly e
+namespace isolation: OK

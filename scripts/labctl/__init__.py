@@ -1,4 +1,4 @@
-"""Agent Brain Lab Controller.
+"""SubstrateOS Lab Controller.
 
 Thin, local-first orchestration harness CLI. See docs/architecture/system-overview.md.
 """

@@ -2,7 +2,7 @@
 
 ## What a capsule is
 
-A capsule is the isolated execution environment for a single Agent Brain project: a
+A capsule is the isolated execution environment for a single SubstrateOS project: a
 devcontainer that sees only its own project workspace and its own scoped slice of the
 shared memory layer (Zero Context Bleed). The Lab Controller scaffolds one capsule per
 project from this template, substitutes the placeholder tokens, and launches it. Targets

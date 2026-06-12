@@ -1,7 +1,7 @@
-# Agent Brain: Claude Code Context
+# SubstrateOS: Claude Code Context
 
 ## Project
-Agent Brain. Local-first AI orchestration harness.
+SubstrateOS (formerly Agent Brain). Local-first AI orchestration harness.
 Phase 1 of 3. Build phase: Lab Controller CLI, ingestion, memory, status dashboard.
 
 ## Scope Right Now

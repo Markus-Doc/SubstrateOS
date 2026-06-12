@@ -73,7 +73,7 @@ def test_report_covers_all_oq006_fields(repo: Path):
     ingest_file(repo, repo / "MASTER_AI_System_Research.md", "test-ns")
     report = build_report(repo)
 
-    assert report.manifest is not None and report.manifest.project == "Agent Brain"
+    assert report.manifest is not None and report.manifest.project == "SubstrateOS"
     assert report.source_of_truth_exists
     assert len(report.decisions) == 2
     assert len(report.open_questions) == 2
@@ -88,7 +88,7 @@ def test_render_contains_every_dashboard_section(repo: Path):
     make_fixture_repo(repo)
     output = render(build_report(repo))
     for fragment in (
-        "Agent Brain - phase 1",
+        "SubstrateOS - phase 1",
         "source of truth",
         "confirmed decisions",
         "open questions (1/2 closed)",
