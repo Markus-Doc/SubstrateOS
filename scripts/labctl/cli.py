@@ -13,6 +13,7 @@ import typer
 from labctl import capsule as capsule_mod
 from labctl import doctor as doctor_mod
 from labctl import gate as gate_mod
+from labctl import lab as lab_mod
 from labctl import review as review_mod
 from labctl.config import find_repo_root, init_project, load_manifest
 from labctl.ingest import ingest_source
@@ -25,6 +26,8 @@ MEMORY_DB_REL = "artifacts/memory.sqlite"
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 review_app = typer.Typer(no_args_is_help=True, add_completion=False)
 app.add_typer(review_app, name="review", help="Review queue for AI-derived content.")
+lab_app = typer.Typer(no_args_is_help=True, add_completion=False)
+app.add_typer(lab_app, name="lab", help="Lab host operator: wake, status, sync, dispatch.")
 
 
 def _root() -> Path:
@@ -167,6 +170,98 @@ def build(
         typer.echo(f"build exited non-zero: {result.exit_code}", err=True)
         raise typer.Exit(code=result.exit_code)
     typer.echo("build completed within budget")
+
+
+@lab_app.command("wake")
+def lab_wake(
+    wait: bool = typer.Option(False, "--wait", help="Poll ssh until the host answers."),
+    timeout: float = typer.Option(120.0, help="Seconds to wait for ssh with --wait."),
+) -> None:
+    """Send the Wake-on-LAN magic packet to the lab host."""
+    root = _root()
+    config = lab_mod.load_lab_config(root)
+    if not config.wol_mac:
+        typer.echo(
+            "error: LAB_WOL_MAC not set (environment or gitignored .env)", err=True
+        )
+        raise typer.Exit(code=1)
+    try:
+        lab_mod.send_wol(config.wol_mac, config.wol_broadcast)
+    except (ValueError, OSError) as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"magic packet sent (broadcast {config.wol_broadcast}:{lab_mod.WOL_PORT})")
+    if wait:
+        typer.echo(f"waiting for ssh on {config.ssh_host} (timeout {timeout:.0f}s)...")
+        if lab_mod.wait_for_ssh(config, timeout=timeout):
+            typer.echo("lab host is reachable")
+        else:
+            typer.echo("lab host did not answer ssh in time", err=True)
+            raise typer.Exit(code=1)
+
+
+@lab_app.command("status")
+def lab_status() -> None:
+    """One ssh round trip: hostname, uptime, claude/codex/gh auth, repo HEAD."""
+    root = _root()
+    config = lab_mod.load_lab_config(root)
+    try:
+        parsed = lab_mod.probe_status(config)
+    except lab_mod.LabError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    verdicts = lab_mod.status_ok(parsed)
+    failed = False
+    for key in lab_mod.STATUS_KEYS:
+        ok = verdicts.get(key, False)
+        mark = "ok " if ok else "FAIL"
+        typer.echo(f"[{mark}] {key}: {parsed.get(key, 'missing')}")
+        failed = failed or not ok
+    if failed:
+        raise typer.Exit(code=1)
+
+
+@lab_app.command("sync")
+def lab_sync() -> None:
+    """Clone or fast-forward the SubstrateOS checkout on the lab host."""
+    root = _root()
+    config = lab_mod.load_lab_config(root)
+    try:
+        head = lab_mod.sync(config)
+    except lab_mod.LabError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"lab repo HEAD: {head}")
+
+
+@lab_app.command("dispatch")
+def lab_dispatch(
+    mission: str = typer.Argument(..., help="Mission text, delivered on stdin (ADR-015)"),
+    token_budget: int = typer.Option(
+        None, help="Cumulative token budget for this run (default: ADR-016 value)"
+    ),
+    workdir: str = typer.Option(
+        None, help="Remote working directory (default: the lab repo checkout)"
+    ),
+) -> None:
+    """Run a metered headless claude mission on the lab host (breaker armed)."""
+    root = _root()
+    try:
+        result = lab_mod.dispatch(
+            root, mission, token_budget=token_budget, workdir=workdir
+        )
+    except lab_mod.LabError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"run log: {result.run_log}")
+    typer.echo(f"tokens used: {result.tokens_used} / budget {result.token_budget}")
+    if result.breaker_tripped:
+        typer.echo("CIRCUIT BREAKER: token budget exceeded, dispatch terminated", err=True)
+        raise typer.Exit(code=1)
+    if result.exit_code != 0:
+        typer.echo(f"dispatch exited non-zero: {result.exit_code}", err=True)
+        raise typer.Exit(code=result.exit_code)
+    typer.echo("dispatch completed within budget")
 
 
 @app.command()
