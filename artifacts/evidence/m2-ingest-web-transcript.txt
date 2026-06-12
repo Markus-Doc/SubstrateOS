@@ -1,0 +1,7 @@
+C:\Users\marku\OneDrive\Documents\GitHub\SubstrateOS\.venv\Lib\site-packages\firecrawl\v2\types.py:988: UserWarning: Field name "json" in "MonitorPageDiff" shadows an attribute in parent "BaseModel"
+  class MonitorPageDiff(BaseModel):
+C:\Users\marku\OneDrive\Documents\GitHub\SubstrateOS\.venv\Lib\site-packages\firecrawl\v2\types.py:1003: UserWarning: Field name "json" in "MonitorPageSnapshot" shadows an attribute in parent "BaseModel"
+  class MonitorPageSnapshot(BaseModel):
+ingested: artifacts\ingest\substrateos\www.anthropic.com-engineering-building-effective-agents.md
+sha256: 2bc395e6cb613b32c9f6bc1f6cfa7cd6b99f43a71a38a4fc9b6efb1d0ac5828c
+namespace: substrateos  chunks indexed: 13

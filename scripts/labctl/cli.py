@@ -10,6 +10,7 @@ from pathlib import Path
 
 import typer
 
+from labctl import capsule as capsule_mod
 from labctl import doctor as doctor_mod
 from labctl import gate as gate_mod
 from labctl import review as review_mod
@@ -83,7 +84,7 @@ def review_generate(
     """Summarise an ingested document into the review queue (claude -p, unpromoted)."""
     root = _root()
     try:
-        out_path = review_mod.generate_summary(root, path)
+        out_path = review_mod.generate_summary(root, path.resolve())
     except (RuntimeError, ValueError) as exc:
         typer.echo(f"error: {exc}", err=True)
         raise typer.Exit(code=1) from exc
@@ -109,6 +110,7 @@ def review_approve(
 ) -> None:
     """Promote a derived document and index its chunks into memory."""
     root = _root()
+    path = path.resolve()
     try:
         with SQLiteMemory(root / MEMORY_DB_REL) as memory:
             chunks = review_mod.approve(root, path, memory)
@@ -116,6 +118,55 @@ def review_approve(
         typer.echo(f"error: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     typer.echo(f"promoted: {path.relative_to(root)}  chunks indexed: {chunks}")
+
+
+@app.command()
+def new(
+    project: str = typer.Argument(..., help="Capsule project name (simple slug)"),
+    mission: str = typer.Option(
+        "(mission not yet defined)", help="Mission statement written into the capsule CLAUDE.md"
+    ),
+    token_budget: int = typer.Option(
+        capsule_mod.DEFAULT_TOKEN_BUDGET, help="Cumulative token budget per build run"
+    ),
+) -> None:
+    """Scaffold a capsule as a sibling directory (its own future GitHub repo)."""
+    root = _root()
+    try:
+        capsule_dir = capsule_mod.scaffold_capsule(
+            root, project, mission=mission, token_budget=token_budget
+        )
+    except (ValueError, FileExistsError, FileNotFoundError) as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"capsule scaffolded: {capsule_dir}")
+    typer.echo(f"namespace: {project}  token budget: {token_budget}")
+
+
+@app.command()
+def build(
+    project: str = typer.Argument(..., help="Capsule project name (sibling directory)"),
+    mission: str = typer.Option(None, help="Override the capsule manifest mission"),
+    token_budget: int = typer.Option(None, help="Override the capsule manifest token budget"),
+) -> None:
+    """Run a headless claude build in the capsule with the circuit breaker armed."""
+    root = _root()
+    try:
+        result = capsule_mod.run_build(
+            root, project, mission=mission, token_budget=token_budget
+        )
+    except (FileNotFoundError, RuntimeError) as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"run log: {result.run_log}")
+    typer.echo(f"tokens used: {result.tokens_used} / budget {result.token_budget}")
+    if result.breaker_tripped:
+        typer.echo("CIRCUIT BREAKER: token budget exceeded, build terminated", err=True)
+        raise typer.Exit(code=1)
+    if result.exit_code != 0:
+        typer.echo(f"build exited non-zero: {result.exit_code}", err=True)
+        raise typer.Exit(code=result.exit_code)
+    typer.echo("build completed within budget")
 
 
 @app.command()

@@ -63,14 +63,15 @@ def test_review_flow_end_to_end(in_repo: Path, monkeypatch):
     src = in_repo / "note.md"
     src.write_text("# Quantum harness\n\nOrchestration notes about capsules.\n", encoding="utf-8")
     runner.invoke(app, ["ingest", str(src), "--namespace", "cli-test"])
-    ingested = in_repo / "artifacts" / "ingest" / "cli-test" / "note.md"
+    # Relative paths exercise the resolve() in the review commands.
+    ingested = Path("artifacts/ingest/cli-test/note.md")
 
     assert "empty" in runner.invoke(app, ["review", "list"]).output
 
     result = runner.invoke(app, ["review", "generate", str(ingested)])
     assert result.exit_code == 0, result.output
-    derived = in_repo / "artifacts" / "ingest" / "cli-test" / "derived" / "note-summary.md"
-    assert derived.is_file()
+    derived = Path("artifacts/ingest/cli-test/derived/note-summary.md")
+    assert (in_repo / derived).is_file()
     assert "PENDING" in runner.invoke(app, ["review", "list"]).output
 
     # Unpromoted derived content must not be searchable.
