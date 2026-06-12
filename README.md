@@ -49,6 +49,10 @@ strict per-project execution isolation.
 
 Phase 1: Core Loop — first build landed 2026-06-11 (labctl CLI, ingestion,
 SQLite FTS5 memory, status dashboard, release gate, capsule template).
+Tool readiness landed 2026-06-12: gitleaks, Trivy, Semgrep (WSL), Docling and
+Firecrawl installed and smoke-tested; the release gate now runs six stages —
+secret scan, lint, tests, SAST, vuln scan, and a promptfoo eval (ADR-012) —
+with `labctl gate --strict` for pre-publish runs.
 Remaining Phase 1 work: multi-source ingestion (PDF/web), capsule launch,
 token budget circuit breaker. Milestone-gated, no calendar deadlines; the
 remaining work is one autonomous Fable 5 build campaign (ADR-010).

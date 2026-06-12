@@ -26,5 +26,9 @@ scripts/, per docs/planning/phase-1-build-prompt.md and the approved build plan.
 See docs/architecture/system-overview.md for the five-layer architecture.
 
 ## Memory Layer
-agentmemory MCP server, SQLite backend, scoped per capsule namespace.
-BM25 plus vector hybrid retrieval. Every chunk stored with SHA256 hash and source URL.
+Built-in SQLite FTS5 provider (`SQLiteMemory` in scripts/labctl/memory.py):
+BM25 keyword retrieval via native bm25() ranking, namespace isolation enforced
+in SQL, every chunk stored with SHA256 hash and source URL. agentmemory MCP
+integration is optional and deferred behind the MemoryProvider interface
+(ADR-009). Vector/hybrid retrieval is deferred to Phase 2 (local embeddings on
+the RTX 3070).
