@@ -135,8 +135,10 @@ def _ingest_text(
             _frontmatter(digest, captured, source, namespace) + text, encoding="utf-8"
         )
 
+    # Unchanged content is not re-indexed (Phase 2 M1: re-ingest is a true
+    # no-op for memory; SQLiteMemory.store guards identical chunks as well).
     chunks_stored = 0
-    if memory is not None:
+    if memory is not None and not skipped:
         for chunk in chunk_markdown(text):
             memory.store(
                 namespace=namespace,

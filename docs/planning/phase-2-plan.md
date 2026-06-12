@@ -62,14 +62,15 @@ verified from the control plane.
 
 ### Milestone 1: Inherited Debt and Campaign Metering
 
-- [ ] Re-ingest no longer duplicates memory rows: uniqueness guard in
+- [x] Re-ingest no longer duplicates memory rows: uniqueness guard in
       `SQLiteMemory` plus the ingest tail skips indexing when the content is
       unchanged (`skipped=True`); one-time cleanup of existing duplicate rows
+      (run 2026-06-12: 0 duplicates found in the live db)
 - [ ] OQ-006 dashboard reads live SubstrateOS state instead of example data
-      (retrospective debt item)
-- [ ] Per-campaign cumulative token accounting across capsule run logs
+      (retrospective debt item — lives in the research-dashboard repo)
+- [x] Per-campaign cumulative token accounting across capsule run logs
       (`labctl usage`), closing the ADR-016 open consequence
-- [ ] Tests for all of the above; suite green
+- [x] Tests for all of the above; suite green (103 passing)
 
 ### Milestone 2: Lab Operator Bring-Up (realigned per ADR-017)
 
