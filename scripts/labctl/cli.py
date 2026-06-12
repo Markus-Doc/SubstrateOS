@@ -12,14 +12,18 @@ import typer
 
 from labctl import doctor as doctor_mod
 from labctl import gate as gate_mod
+from labctl import review as review_mod
 from labctl.config import find_repo_root, init_project, load_manifest
-from labctl.ingest import ingest_file
+from labctl.ingest import ingest_source
 from labctl.memory import SQLiteMemory
+from labctl.providers import WebIngestError
 from labctl.status import build_report, render
 
 MEMORY_DB_REL = "artifacts/memory.sqlite"
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
+review_app = typer.Typer(no_args_is_help=True, add_completion=False)
+app.add_typer(review_app, name="review", help="Review queue for AI-derived content.")
 
 
 def _root() -> Path:
@@ -52,20 +56,66 @@ def status() -> None:
 
 @app.command()
 def ingest(
-    path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
+    source: str = typer.Argument(..., help="File path (.pdf or text) or http(s) URL"),
     namespace: str = typer.Option(None, help="Memory namespace (defaults to project namespace)"),
     source_link: str = typer.Option(None, help="Original source URL, recorded as provenance"),
 ) -> None:
-    """Normalise a file into the ingest store and index it into memory."""
+    """Normalise a source (text file, PDF, or URL) and index it into memory."""
     root = _root()
     manifest = load_manifest(root)
     ns = namespace or (manifest.namespace if manifest else "default")
-    with SQLiteMemory(root / MEMORY_DB_REL) as memory:
-        result = ingest_file(root, path, ns, source_link=source_link, memory=memory)
+    try:
+        with SQLiteMemory(root / MEMORY_DB_REL) as memory:
+            result = ingest_source(root, source, ns, source_link=source_link, memory=memory)
+    except (WebIngestError, FileNotFoundError) as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
     status_word = "unchanged" if result.skipped else "ingested"
     typer.echo(f"{status_word}: {result.output_path.relative_to(root)}")
     typer.echo(f"sha256: {result.sha256}")
     typer.echo(f"namespace: {ns}  chunks indexed: {result.chunks_stored}")
+
+
+@review_app.command("generate")
+def review_generate(
+    path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
+) -> None:
+    """Summarise an ingested document into the review queue (claude -p, unpromoted)."""
+    root = _root()
+    try:
+        out_path = review_mod.generate_summary(root, path)
+    except (RuntimeError, ValueError) as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"derived (pending review): {out_path.relative_to(root)}")
+
+
+@review_app.command("list")
+def review_list() -> None:
+    """List derived documents and their promotion state."""
+    root = _root()
+    docs = review_mod.list_derived(root)
+    if not docs:
+        typer.echo("review queue empty")
+        return
+    for doc in docs:
+        mark = "promoted" if doc.promoted else "PENDING "
+        typer.echo(f"[{mark}] {doc.path.relative_to(root)}  (ns: {doc.namespace})")
+
+
+@review_app.command("approve")
+def review_approve(
+    path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
+) -> None:
+    """Promote a derived document and index its chunks into memory."""
+    root = _root()
+    try:
+        with SQLiteMemory(root / MEMORY_DB_REL) as memory:
+            chunks = review_mod.approve(root, path, memory)
+    except ValueError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"promoted: {path.relative_to(root)}  chunks indexed: {chunks}")
 
 
 @app.command()
