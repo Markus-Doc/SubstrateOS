@@ -277,3 +277,11 @@ def test_strict_turns_skips_into_failures(
     assert not by_name["sast"].passed
     assert by_name["sast"].detail.endswith("(strict)")
     assert by_name["vuln-scan"].passed  # genuine passes untouched
+
+
+def test_tail_is_ascii_safe():
+    from labctl.gate import _tail
+
+    out = _tail("line1\nfinding ┆ here ❯❯❱")
+    out.encode("ascii")  # must not raise on cp1252 consoles
+    assert "finding ? here" in out

@@ -1,0 +1,7 @@
+[PASS] secret-scan: gitleaks: no leaks found
+[PASS] lint: ruff: clean
+[PASS] tests: pytest: 78 passed in 13.57s
+[PASS] sast: semgrep: no findings
+[PASS] vuln-scan: trivy: no HIGH/CRITICAL findings
+[PASS] evals: promptfoo: all assertions passed
+gate: all stages passed
