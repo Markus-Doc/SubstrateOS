@@ -218,6 +218,25 @@ def monitor_stream(
     return tokens_used, False
 
 
+def _kill_build(proc: subprocess.Popen[str]) -> None:
+    """Terminate the build and its descendants.
+
+    On Windows the claude console-script shim spawns the real node process;
+    plain kill() would terminate only the shim and orphan node (observed
+    holding the capsule cwd open). taskkill /T sweeps the tree while the
+    parent is still alive to link it.
+    """
+    pid = getattr(proc, "pid", None)
+    if os.name == "nt" and pid is not None:
+        subprocess.run(
+            ["taskkill", "/PID", str(pid), "/T", "/F"],
+            capture_output=True,
+            text=True,
+        )
+    proc.kill()
+    proc.wait()
+
+
 def _spawn_claude(mission: str, cwd: Path) -> subprocess.Popen[str]:
     claude = shutil.which("claude")
     if claude is None:
@@ -274,8 +293,7 @@ def run_build(
             proc.stdout, budget, lambda line: log.write(line + "\n")
         )
         if tripped:
-            proc.kill()
-            proc.wait()
+            _kill_build(proc)
             log.write(
                 json.dumps(
                     {
