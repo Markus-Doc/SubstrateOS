@@ -30,3 +30,6 @@ a hybrid backend would slot in.
 - The Milestone 1 checklist item "agentmemory MCP server installed and
   smoke-tested" is superseded by this provider until multi-agent access is
   actually needed.
+- Vector/hybrid retrieval is assigned to Phase 2 (local embeddings and
+  rerankers on the RTX 3070, per Final_Research Phase 2), filling the
+  `NotImplementedError` stub behind the same interface. (Addendum 2026-06-12.)
