@@ -235,6 +235,21 @@ def sync(
 # --- dispatch ---------------------------------------------------------------
 
 
+def _unexpand_local_home(path: str) -> str:
+    """Undo click's Windows argv expansion for remote paths.
+
+    On Windows, click pre-expands ``~`` in command-line arguments
+    (click.utils._expand_args), so a remote path given as ``~/x`` arrives as
+    ``<local home>/x``. Map it back to the remote home; the local home is
+    never a meaningful remote workdir.
+    """
+    home = str(Path.home())
+    for prefix in (home, home.replace("\\", "/")):
+        if path == prefix or path.startswith((prefix + "/", prefix + "\\")):
+            return "~" + path[len(prefix):].replace("\\", "/")
+    return path
+
+
 def _dispatch_command(workdir: str) -> str:
     return (
         f"cd {_remote_path(workdir)} && "
@@ -279,7 +294,8 @@ def dispatch(
     """
     config = load_lab_config(root)
     budget = token_budget or DEFAULT_TOKEN_BUDGET
-    argv = _ssh_argv(config.ssh_host, _dispatch_command(workdir or config.remote_repo))
+    workdir = _unexpand_local_home(workdir) if workdir else config.remote_repo
+    argv = _ssh_argv(config.ssh_host, _dispatch_command(workdir))
 
     log_dir = root / RUN_LOG_DIR_REL
     log_dir.mkdir(parents=True, exist_ok=True)

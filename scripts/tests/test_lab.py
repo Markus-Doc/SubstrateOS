@@ -191,6 +191,29 @@ def test_sync_failure_raises(repo: Path, monkeypatch: pytest.MonkeyPatch):
 # --- dispatch ---------------------------------------------------------------
 
 
+def test_dispatch_unexpands_click_mangled_workdir(repo: Path, monkeypatch: pytest.MonkeyPatch):
+    """click pre-expands ~ in argv on Windows; a remote ~/x must survive."""
+    monkeypatch.delenv("LAB_SSH_HOST", raising=False)
+    from pathlib import Path as P
+
+    from labctl.lab import _unexpand_local_home
+
+    home = str(P.home())
+    assert _unexpand_local_home(home + "/lab-scratch") == "~/lab-scratch"
+    assert _unexpand_local_home(home.replace("\\", "/") + "/lab-scratch") == "~/lab-scratch"
+    assert _unexpand_local_home("/srv/elsewhere") == "/srv/elsewhere"
+    assert _unexpand_local_home("lab-scratch") == "lab-scratch"
+
+    captured: list[str] = []
+
+    def spawn(mission, argv):
+        captured.append(argv[-1])
+        return FakeProc([json.dumps({"type": "result"})])
+
+    dispatch(repo, "m", workdir=home + "/lab-scratch", spawn=spawn)
+    assert captured[0].startswith('cd "$HOME/lab-scratch" && ')
+
+
 def test_dispatch_command_shape():
     command = _dispatch_command("~/SubstrateOS")
     assert command.startswith('cd "$HOME/SubstrateOS" && ')
