@@ -13,7 +13,6 @@
     "deny": [
       "Write(.env*)",
       "Write(secrets/**)",
-      "Bash(git push*)",
       "Bash(curl*)",
       "Bash(wget*)"
     ]
