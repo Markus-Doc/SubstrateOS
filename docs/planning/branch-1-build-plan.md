@@ -54,12 +54,14 @@ mapped to per-engine `capabilities`, with honest gap self-report.
 launch-time-only caveat; `subos --dry-run` now prints the cold handshake. Engine
 adapters carry `capabilities` + `warm_command_file`. 6 tests; ruff clean.
 
-### M-E — Multi-agent / sub-agent orchestration  (reconcile w/ branch-2)
-Frontier-as-planner/judge + sub-agent workers (architect → workers → reviewer →
-judge; handoff packets; verify-before-accept — per master research). Dispatch
-through `labctl`; each sub-agent budget-capped by the existing token circuit
-breaker; isolated per capsule. This is the Phase-2 "Dynamic Workflows" milestone.
-DoD: orchestrated run with per-agent budgets + run-log evidence; gate green.
+### M-E — Multi-agent / sub-agent orchestration  ✅ DONE (2026-06-13)
+`labctl/orchestrate.py`: architect → workers → reviewer → judge with handoff
+packets and verify-before-accept (judge gates acceptance). Pure engine with an
+injectable `StageRunner` (fully tested without spending tokens); default
+`claude_stage_runner` wraps the headless-claude circuit-breaker machinery
+(`labctl.capsule`), each stage budget-capped. JSONL run-log + agentic-eval trace
+metrics (P2-B: task_completion, budget_utilisation, breaker_trips, …).
+`labctl workflow run "<mission>" [--workers N] [--dry-run]`. 8 tests; ruff clean.
 
 ### M-F — Conformance + supply-chain gate  (reconcile w/ branch-2)
 Cross-engine conformance eval (promptfoo, per engine: "given SubstrateOS context,
