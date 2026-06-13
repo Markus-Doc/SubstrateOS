@@ -53,3 +53,51 @@ def compile_to(
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(render(spec_text, adapter), encoding="utf-8")
     return out
+
+
+WARM_COMMAND_TEMPLATE = """{marker}
+<!-- engine: {engine} — SubstrateOS warm activation (/substrateos) -->
+
+# /substrateos — activate SubstrateOS in this session
+
+Adopt the SubstrateOS methodology now (see `{instruction_file}` and
+`substrate/methodology.md`). Then:
+
+1. Run `labctl status` and `labctl doctor` to hydrate the current build state.
+2. Print the capability handshake (MUST vs SHOULD for this engine) and report
+   anything you cannot do natively.
+3. Drive `labctl` from here on; never bypass the release gate.
+
+Note: warm activation cannot retro-enable launch-time-only features (permission
+mode, MCP servers, session-start hooks). For full integration, relaunch with
+`subos {engine} --full-auto`.
+"""
+
+
+def compile_warm_command(
+    adapter: EngineAdapter,
+    target_dir: Path,
+    *,
+    force: bool = False,
+) -> Path | None:
+    """Compile the ``/substrateos`` warm-activation command for ``adapter``.
+
+    Returns the written path, or None if the engine has no warm-command slot.
+    """
+    if not adapter.warm_command_file:
+        return None
+    out = Path(target_dir) / adapter.warm_command_file
+    if not force and not is_managed(out):
+        raise FileExistsError(
+            f"{out} exists and is not SubstrateOS-managed; pass force=True to overwrite"
+        )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(
+        WARM_COMMAND_TEMPLATE.format(
+            marker=MANAGED_MARKER,
+            engine=adapter.name,
+            instruction_file=adapter.instruction_file,
+        ),
+        encoding="utf-8",
+    )
+    return out

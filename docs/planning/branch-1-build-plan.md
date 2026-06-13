@@ -46,10 +46,13 @@ skills dir, full-auto flag mapping. Base default posture = platform-default;
 Remaining for later: compiling `SKILL.md` skills (not just the instruction
 file).
 
-### M-D — `/substrateos` warm activation
-In-session activation command compiled per engine; capability handshake (MUST vs
-SHOULD tiers); live hydration via `labctl`. DoD: command artifact + handshake
-report; honest launch-time-only caveat surfaced.
+### M-D — `/substrateos` warm activation  ✅ DONE (2026-06-13)
+`labctl/handshake.py`: MUST tier (harness-enforced on any engine) + SHOULD tier
+mapped to per-engine `capabilities`, with honest gap self-report.
+`compile_spec.compile_warm_command` emits the per-engine `/substrateos` command
+(`.claude/commands/`, `.codex/prompts/`, `.cursor/commands/`) with the
+launch-time-only caveat; `subos --dry-run` now prints the cold handshake. Engine
+adapters carry `capabilities` + `warm_command_file`. 6 tests; ruff clean.
 
 ### M-E — Multi-agent / sub-agent orchestration  (reconcile w/ branch-2)
 Frontier-as-planner/judge + sub-agent workers (architect → workers → reviewer →

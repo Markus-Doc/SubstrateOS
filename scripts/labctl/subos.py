@@ -18,9 +18,10 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from labctl.compile_spec import compile_to
+from labctl.compile_spec import compile_to, compile_warm_command
 from labctl.config import find_repo_root
 from labctl.engines import EngineAdapter, get_adapter
+from labctl.handshake import build_handshake, render_handshake
 
 
 @dataclass
@@ -74,6 +75,7 @@ def run(args: argparse.Namespace) -> int:
         return 2
     try:
         written = compile_to(spec_path, plan.adapter, target, force=args.force)
+        warm = compile_warm_command(plan.adapter, target, force=args.force)
     except FileExistsError as exc:
         print(f"subos: {exc}", file=sys.stderr)
         return 2
@@ -82,7 +84,10 @@ def run(args: argparse.Namespace) -> int:
         print(f"engine        : {plan.adapter.name}")
         print(f"posture       : {plan.posture}")
         print(f"instruction   : {written}")
+        print(f"warm command  : {warm if warm else '(engine has no /substrateos slot)'}")
         print(f"launch argv   : {' '.join(plan.argv)}")
+        print("---")
+        print(render_handshake(build_handshake(plan.adapter), mode="cold"))
         print("(dry run — engine not launched)")
         return 0
 
