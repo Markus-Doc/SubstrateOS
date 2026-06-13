@@ -47,6 +47,42 @@ JUDGE_PROMPT = (
 
 
 @dataclass
+class HandoffPacket:
+    """Self-contained work order passed to a sub-agent (master research pattern).
+
+    Carries everything a bounded worker needs and nothing it must guess: the
+    target, the exact objective, in/out of scope, the evidence expected back,
+    how to verify it, and when to stop.
+    """
+
+    repo: str
+    objective: str
+    in_scope: list[str]
+    out_of_scope: list[str]
+    expected_evidence: str
+    verification_commands: list[str]
+    stop_conditions: list[str]
+    grounding: list[str] = field(default_factory=list)
+
+    def render(self) -> str:
+        def bullets(items: list[str]) -> str:
+            return "\n".join(f"- {i}" for i in items) if items else "- (none)"
+
+        ground = "\n".join(f"  > {g}" for g in self.grounding) if self.grounding else "  (none)"
+        return (
+            f"# Handoff packet\n\n"
+            f"Repo: {self.repo}\n\n"
+            f"Objective:\n{self.objective}\n\n"
+            f"In scope:\n{bullets(self.in_scope)}\n\n"
+            f"Out of scope:\n{bullets(self.out_of_scope)}\n\n"
+            f"Expected evidence:\n{self.expected_evidence}\n\n"
+            f"Verification commands:\n{bullets(self.verification_commands)}\n\n"
+            f"Stop conditions:\n{bullets(self.stop_conditions)}\n\n"
+            f"Grounding (BM25 retrieval over the repo namespace):\n{ground}\n"
+        )
+
+
+@dataclass
 class StageResult:
     role: str
     name: str

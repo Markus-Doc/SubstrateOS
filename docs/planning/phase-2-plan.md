@@ -122,18 +122,21 @@ Lab box during the dial-in (ADR-017 amendment).
 
 ### Milestone 5: Dynamic Workflows — Orchestration Capability Layer + Capstone
 
-- [ ] Repo-resident capability package encoding the master research doc's
+- [x] Repo-resident capability package encoding the master research doc's
       delegation patterns: frontier-as-judge; self-contained handoff packets
-      (repo path, exact objective, in/out of scope, expected evidence,
-      verification commands, stop conditions); architect → bounded workers →
-      reviewer → judge. Claude Code native orchestration only (ADR-002)
-- [ ] `labctl audit <repo>` runs a codebase-wide audit as that Dynamic
-      Workflow, grounded by BM25 retrieval over the repo's namespace
-      (hybrid deferred per ADR-017)
+      (`orchestrate.HandoffPacket`: repo, objective, in/out of scope, expected
+      evidence, verification commands, stop conditions); architect → bounded
+      workers → reviewer → judge (`orchestrate.run_workflow`, M-E). Claude Code
+      native orchestration only (ADR-002)
+- [x] `labctl audit <repo>` runs a codebase-wide audit as that Dynamic
+      Workflow (`audit.run_audit`), grounded by BM25 retrieval over the repo's
+      namespace via `SQLiteMemory.search_keyword` (hybrid deferred per ADR-017);
+      framed as engineering/code-quality, not pentest (master doc:
+      cyber-classifier rerouting). `--dry-run` shows the packet/plan
 - [ ] Capstone (success metric): the audit run on SubstrateOS itself through
-      the harness, in-container, findings report committed. Missions framed
-      as engineering/code-quality audits, not pentest language (master doc:
-      cyber-classifier rerouting)
+      the harness, in-container, findings report committed. **Owner-triggered:
+      spends real Agent-SDK credits + needs Docker on the box; the capability is
+      built and tested, the live run is not auto-started while AFK.**
 
 ### Milestone 7: Remote Trigger Pathway (OQ-007 → ADR-018; owner-directed 2026-06-12)
 
