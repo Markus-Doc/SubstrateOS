@@ -47,8 +47,9 @@ banner, and execs the engine — with `--dry-run` for inspection. Engine adapter
 (`labctl/engines.py`) for claude/codex/gemini/cursor: binary, instruction file,
 skills dir, full-auto flag mapping. Base default posture = platform-default;
 `--full-auto` opt-in (ADR-019). 8 tests; ruff clean; proven end to end.
-Remaining for later: compiling `SKILL.md` skills (not just the instruction
-file).
+*(Polish 2026-06-13: `subos` now also compiles the progressive-disclosure
+`substrateos` SKILL.md into the engine's skills dir, and the exec path is
+hardened for missing-binary / interrupt.)*
 
 ### M-D — `/substrateos` warm activation  ✅ DONE (2026-06-13)
 `labctl/handshake.py`: MUST tier (harness-enforced on any engine) + SHOULD tier
