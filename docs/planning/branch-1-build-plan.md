@@ -22,12 +22,12 @@ immediately; M-E/M-F should reconcile with the branch-2 impact assessment
 
 ## Milestones
 
-### M-A — Format + spec skeleton
-Lock SKILL.md/AGENTS.md as the canonical compile target; scaffold the canonical
-engine-neutral spec source. DoD: a `docs/` note or ADR amendment; spec skeleton
-checked in; gate green.
+### M-A — Format + spec skeleton  ✅ DONE (2026-06-13)
+Locked SKILL.md/AGENTS.md as the canonical compile target (ADR-019); canonical
+engine-neutral spec checked in at `substrate/methodology.md` (MUST/SHOULD tiers,
+activation contract, compile-target table) with `substrate/README.md`.
 
-### M-B — Base extension seam  (BUILDING FIRST)
+### M-B — Base extension seam  ✅ DONE (2026-06-13)
 - Overlay discovery + command-plugin hook (`SUBSTRATEOS_OVERLAY` → mount extra
   `labctl` commands). No-op + safe when unset.
 - Provider registry generalising the `WebProvider`/`MemoryProvider` ABC pattern
@@ -58,7 +58,21 @@ refuses to bypass the gate, drives labctl correctly"). Supply-chain audit stage
 for any skill/MCP/plugin loaded (licence/maintainer/scripts/network/permissions;
 sandbox before real data). DoD: new gate stage(s); evidence; gate green.
 
-## Sequencing vs branch-2
-Branch-2 (whole-repo research-impact review) runs in parallel. M-A/M-B proceed
-now. Before M-E/M-F land, fold in branch-2's proposed ADRs (esp. trace/eval
-layer and MCP-vs-CLI tool seam).
+## Sequencing vs branch-2  (branch-2 COMPLETE 2026-06-13)
+Branch-2's whole-repo impact assessment
+(`docs/planning/research-v2-impact-assessment.md`) cleared the base: **no
+architecture rewrite, no genuine contradiction.** Backlog folded in here:
+- **P1-A** default model Opus 4.8 → **ADR-022 (Accepted).**
+- **P1-B** supply-chain audit gate (skills/MCP/plugins) → **M-F**, but it
+  **expands the locked Phase-2 scope** ("six stages / no red-team expansion").
+  Supply-chain audit ≠ red-team, but this needs an **owner decision** before
+  M-F lands.
+- **P2-A** in-process MCP tool seam for `labctl` providers → folds into M4
+  (in-container execution); uses the M-B `ProviderRegistry`.
+- **P2-B** trace + agentic-eval metrics (Task Completion, Tool Correctness, …)
+  → folds into **M-E** (Dynamic Workflows orchestration).
+- **P3-A** log LiteLLM-not-used + thin-harness-not-framework divergences
+  (ADR-013 precedent).
+
+M-C/M-D proceed now. M-E reconciles with P2-B. M-F's supply-chain stage is
+gated on the P1-B owner decision.
