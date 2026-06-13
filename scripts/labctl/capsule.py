@@ -302,8 +302,14 @@ def run_build(
     token_budget: int | None = None,
     dest_parent: Path | None = None,
     spawn: Callable[[str, Path], subprocess.Popen[str]] | None = None,
+    kill: Callable[[subprocess.Popen[str]], None] | None = None,
 ) -> BuildResult:
-    """Host-scoped headless build of one capsule with the circuit breaker armed."""
+    """Host-scoped headless build of one capsule with the circuit breaker armed.
+
+    ``kill`` overrides how the breaker terminates the child (host process tree by
+    default; the container runner passes a ``docker kill`` of the whole
+    container, per ADR-025).
+    """
     capsule_dir = (dest_parent or root.parent) / project
     manifest = load_capsule_manifest(capsule_dir)
     mission = mission or manifest.get("mission") or "(mission not yet defined)"
@@ -321,7 +327,7 @@ def run_build(
             proc.stdout, budget, lambda line: log.write(line + "\n")
         )
         if tripped:
-            _kill_build(proc)
+            (kill or _kill_build)(proc)
             log.write(
                 json.dumps(
                     {
@@ -337,3 +343,100 @@ def run_build(
             return BuildResult(tokens_used, budget, True, 1, run_log)
     exit_code = proc.wait()
     return BuildResult(tokens_used, budget, False, exit_code, run_log)
+
+
+# --- In-container capsule execution (ADR-015's deferred first job; ADR-025) ---
+
+DEFAULT_CAPSULE_IMAGE = "substrateos-capsule:latest"
+OAUTH_TOKEN_ENV = "CLAUDE_CODE_OAUTH_TOKEN"
+
+
+def build_docker_argv(
+    capsule_dir: Path, namespace_dir: Path, image: str, container_name: str
+) -> list[str]:
+    """Argv for `docker run` of one capsule. The OAuth token is passed by NAME
+    only (``-e CLAUDE_CODE_OAUTH_TOKEN``) so its value never appears in argv,
+    the image layers, or a mount — only in the launch environment (ADR-025).
+    """
+    return [
+        "docker", "run", "--rm", "-i",
+        "--name", container_name,
+        "-v", f"{capsule_dir.resolve().as_posix()}:/workspace",
+        "-v", f"{namespace_dir.resolve().as_posix()}:/memory",
+        "-w", "/workspace",
+        "-e", OAUTH_TOKEN_ENV,
+        image,
+        "claude", "-p", BUILD_INSTRUCTION,
+        "--dangerously-skip-permissions",
+        "--output-format", "stream-json", "--verbose",
+    ]
+
+
+def kill_container(container_name: str) -> None:
+    """Breaker kill for the container path: stop the whole container, not a tree."""
+    subprocess.run(["docker", "kill", container_name], capture_output=True, text=True)
+
+
+def _spawn_claude_container(
+    mission: str,
+    capsule_dir: Path,
+    namespace_dir: Path,
+    *,
+    token: str,
+    image: str,
+    container_name: str,
+) -> subprocess.Popen[str]:
+    if shutil.which("docker") is None:
+        raise RuntimeError("docker not found on PATH (needed for in-container execution)")
+    env = clean_claude_env()
+    env[OAUTH_TOKEN_ENV] = token  # injected at launch; never written to file/layer/mount
+    argv = build_docker_argv(capsule_dir, namespace_dir, image, container_name)
+    # nosemgrep: python.lang.compatibility.python36.python36-compatibility-Popen1, python.lang.compatibility.python36.python36-compatibility-Popen2 -- project requires Python >= 3.11
+    proc = subprocess.Popen(
+        argv,
+        cwd=capsule_dir,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
+    )
+    assert proc.stdin is not None
+    proc.stdin.write(mission)
+    proc.stdin.close()
+    return proc
+
+
+def run_container_build(
+    root: Path,
+    project: str,
+    *,
+    token: str,
+    image: str = DEFAULT_CAPSULE_IMAGE,
+    mission: str | None = None,
+    token_budget: int | None = None,
+    dest_parent: Path | None = None,
+    spawn: Callable[[str, Path], subprocess.Popen[str]] | None = None,
+    kill: Callable[[subprocess.Popen[str]], None] | None = None,
+) -> BuildResult:
+    """In-container build: same metering/breaker as run_build, but the breaker
+    kills the whole container (ADR-025). ``spawn``/``kill`` are injectable.
+    """
+    namespace_dir = root / NAMESPACE_PARENT_REL / project
+    container_name = f"substrateos-{project}-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}"
+
+    def _spawn(m: str, cwd: Path) -> subprocess.Popen[str]:
+        return _spawn_claude_container(
+            m, cwd, namespace_dir, token=token, image=image, container_name=container_name
+        )
+
+    def _kill(_proc: subprocess.Popen[str]) -> None:
+        kill_container(container_name)
+
+    return run_build(
+        root, project,
+        mission=mission, token_budget=token_budget, dest_parent=dest_parent,
+        spawn=spawn or _spawn, kill=kill or _kill,
+    )
