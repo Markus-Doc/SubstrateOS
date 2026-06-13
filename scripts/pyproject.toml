@@ -16,6 +16,7 @@ dev = ["pytest>=8", "ruff>=0.4"]
 
 [project.scripts]
 labctl = "labctl.cli:app"
+subos = "labctl.subos:main"
 
 [tool.setuptools]
 packages = ["labctl"]
