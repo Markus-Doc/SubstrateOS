@@ -14,6 +14,7 @@ from labctl import capsule as capsule_mod
 from labctl import doctor as doctor_mod
 from labctl import gate as gate_mod
 from labctl import lab as lab_mod
+from labctl import orchestrate as orchestrate_mod
 from labctl import review as review_mod
 from labctl import trigger as trigger_mod
 from labctl import usage as usage_mod
@@ -34,6 +35,10 @@ app.add_typer(lab_app, name="lab", help="Lab host operator: wake, status, sync, 
 trigger_app = typer.Typer(no_args_is_help=True, add_completion=False)
 app.add_typer(
     trigger_app, name="trigger", help="Remote trigger: Telegram channel + RTC duty cycle (ADR-018)."
+)
+workflow_app = typer.Typer(no_args_is_help=True, add_completion=False)
+app.add_typer(
+    workflow_app, name="workflow", help="Dynamic Workflows: multi-agent orchestration."
 )
 
 
@@ -417,6 +422,39 @@ def gate(
     if failed:
         raise typer.Exit(code=1)
     typer.echo("gate: all stages passed")
+
+
+@workflow_app.command("run")
+def workflow_run(
+    mission: str = typer.Argument(..., help="The mission for the orchestrated workflow"),
+    workers: int = typer.Option(2, help="Number of parallel worker sub-agents"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Print the stage plan; do not run"),
+) -> None:
+    """Run architect -> workers -> reviewer -> judge with per-agent budget caps."""
+    root = _root()
+    if dry_run:
+        budget = orchestrate_mod.DEFAULT_STAGE_BUDGET
+        typer.echo(f"workflow plan for: {mission}")
+        typer.echo(f"  architect      (budget {budget})")
+        for i in range(1, workers + 1):
+            typer.echo(f"  worker-{i}       (budget {budget})")
+        typer.echo(f"  reviewer       (budget {budget})")
+        typer.echo(f"  judge          (budget {budget})  [verify-before-accept]")
+        return
+    runner = orchestrate_mod.claude_stage_runner(root)
+    log_dir = root / orchestrate_mod.RUN_LOG_DIR_REL
+    result = orchestrate_mod.run_workflow(
+        mission, runner=runner, n_workers=workers, log_dir=log_dir
+    )
+    for stage in result.stages:
+        mark = "ok" if stage.ok else "BREAKER"
+        typer.echo(f"[{mark}] {stage.name}: {stage.tokens_used}/{stage.budget} tokens")
+    typer.echo(f"verdict: {result.verdict}")
+    typer.echo(f"metrics: {result.metrics}")
+    if result.run_log is not None:
+        typer.echo(f"run log: {result.run_log}")
+    if not result.accepted:
+        raise typer.Exit(code=1)
 
 
 # Mount any optional Overlay (ADR-019). No-op unless SUBSTRATEOS_OVERLAY is set;
