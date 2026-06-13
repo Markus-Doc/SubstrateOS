@@ -33,10 +33,16 @@ behind the `MemoryProvider` seam per ADR-017.
 3. **Capstone target: SubstrateOS itself** (codebase-wide audit through the
    harness).
 4. **No red-team expansion in Phase 2.** Garak / OWASP presets / PyRIT stay
-   deferred; the release gate keeps its six stages. Phase 2 instead delivers
-   the orchestration capability layer (Dynamic Workflows, agents and skills as
-   repo-resident packages, frontier-as-judge delegation per the master
-   research doc).
+   deferred. Phase 2 instead delivers the orchestration capability layer
+   (Dynamic Workflows, agents and skills as repo-resident packages,
+   frontier-as-judge delegation per the master research doc).
+   - *Amended 2026-06-13 (owner-approved, branch-2 P1-B):* one **supply-chain
+     audit** stage for any skill/MCP/plugin loaded (licence/maintainer/scripts/
+     network/permissions; sandbox before real data — master research
+     `## Red Teaming`, `## Gh Skill`) is admitted as a **7th gate stage**,
+     delivered by M-F. Supply-chain audit is distinct from red-teaming (Garak/
+     PyRIT generate harmful prompts; this audits tool provenance before a tool
+     runs), so it does not reopen the red-team deferral. M-F records its own ADR.
 
 ## Execution Model (ADR-010)
 

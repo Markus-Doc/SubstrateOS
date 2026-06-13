@@ -69,10 +69,11 @@ Branch-2's whole-repo impact assessment
 (`docs/planning/research-v2-impact-assessment.md`) cleared the base: **no
 architecture rewrite, no genuine contradiction.** Backlog folded in here:
 - **P1-A** default model Opus 4.8 → **ADR-022 (Accepted).**
-- **P1-B** supply-chain audit gate (skills/MCP/plugins) → **M-F**, but it
-  **expands the locked Phase-2 scope** ("six stages / no red-team expansion").
-  Supply-chain audit ≠ red-team, but this needs an **owner decision** before
-  M-F lands.
+- **P1-B** supply-chain audit gate (skills/MCP/plugins) → **M-F**. It
+  **expands the locked Phase-2 scope** ("six stages / no red-team expansion"),
+  but supply-chain audit ≠ red-team. **OWNER DECISION: APPROVED 2026-06-13**
+  (Markus) — M-F's supply-chain stage is unblocked; phase-2-plan locked decision
+  #4 amended accordingly. M-F should author its own ADR for the new stage.
 - **P2-A** in-process MCP tool seam for `labctl` providers → folds into M4
   (in-container execution); uses the M-B `ProviderRegistry`.
 - **P2-B** trace + agentic-eval metrics (Task Completion, Tool Correctness, …)
@@ -81,4 +82,5 @@ architecture rewrite, no genuine contradiction.** Backlog folded in here:
   (ADR-013 precedent).
 
 M-C/M-D proceed now. M-E reconciles with P2-B. M-F's supply-chain stage is
-gated on the P1-B owner decision.
+**unblocked** (P1-B approved 2026-06-13). P3-A landed as **ADR-023** (logged
+divergences) by branch-2; do not re-author it.
