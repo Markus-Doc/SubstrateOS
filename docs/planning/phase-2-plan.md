@@ -107,18 +107,23 @@ verified from the control plane.
 Prerequisite cleared 2026-06-12: Docker 29.1.3 installed and verified on the
 Lab box during the dial-in (ADR-017 amendment).
 
-- [ ] Capsule image gets the claude CLI; auth per locked decision 2 — OAuth
-      token injected as an env var at container launch, never written to a
-      file, image layer, or mount (template isolation guarantees intact:
-      still no credential mounts)
-- [ ] Run path staged per OQ-005: devcontainer CLI in WSL2 first, then the
-      identical flow on the Lab host over SSH as the standard target
-- [ ] Mission still travels on stdin; stream-json metering and the token
+- [x] Capsule image gets the claude CLI; auth per locked decision 2 — OAuth
+      token injected as an env var at container launch (by NAME only,
+      `-e CLAUDE_CODE_OAUTH_TOKEN`), never written to a file, image layer, or
+      mount (Dockerfile + `capsule.build_docker_argv`; ADR-025)
+- [x] Run path code staged per OQ-005: devcontainer/Docker in WSL2 first, then
+      the identical flow on the Lab host over SSH (the `docker run` argv is
+      host-agnostic; SSH wrapping reuses the M2 lab dispatch path)
+- [x] Mission still travels on stdin; stream-json metering and the token
       circuit breaker (ADR-016) enforced from the dispatching `labctl`,
-      which kills the container, not just a process tree
-- [ ] Capsule memory access design (what `/memory` carries; MCP exposure only
-      if multi-agent access truly needs it, per ADR-009) — recorded as an ADR
-- [ ] Breaker demonstrated live in-container; evidence committed
+      which kills the container (`docker kill`), not just a process tree
+      (`run_container_build` + `run_build`'s pluggable `kill` hook)
+- [x] Capsule memory access design recorded as **ADR-025** (`/memory` bind
+      mount carries the single namespace; no MCP memory exposure unless
+      multi-agent access needs it, per ADR-009)
+- [ ] Breaker demonstrated live in-container; evidence committed — **owner-
+      triggered** (needs Docker on the target + real token spend; the plumbing
+      is built and unit-tested: argv, token-not-in-argv, container-kill on trip)
 
 ### Milestone 5: Dynamic Workflows — Orchestration Capability Layer + Capstone
 

@@ -6,6 +6,7 @@ Commands are registered as their milestones land; unimplemented ones do not exis
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import typer
@@ -165,13 +166,29 @@ def build(
     project: str = typer.Argument(..., help="Capsule project name (sibling directory)"),
     mission: str = typer.Option(None, help="Override the capsule manifest mission"),
     token_budget: int = typer.Option(None, help="Override the capsule manifest token budget"),
+    container: bool = typer.Option(
+        False, "--container", help="Run in a Docker container; breaker kills the container (ADR-025)"
+    ),
 ) -> None:
     """Run a headless claude build in the capsule with the circuit breaker armed."""
     root = _root()
     try:
-        result = capsule_mod.run_build(
-            root, project, mission=mission, token_budget=token_budget
-        )
+        if container:
+            token = os.environ.get(capsule_mod.OAUTH_TOKEN_ENV)
+            if not token:
+                typer.echo(
+                    f"error: --container needs {capsule_mod.OAUTH_TOKEN_ENV} in the "
+                    "environment (subscription OAuth token; never an API key, ADR-017)",
+                    err=True,
+                )
+                raise typer.Exit(code=1)
+            result = capsule_mod.run_container_build(
+                root, project, token=token, mission=mission, token_budget=token_budget
+            )
+        else:
+            result = capsule_mod.run_build(
+                root, project, mission=mission, token_budget=token_budget
+            )
     except (FileNotFoundError, RuntimeError) as exc:
         typer.echo(f"error: {exc}", err=True)
         raise typer.Exit(code=1) from exc
