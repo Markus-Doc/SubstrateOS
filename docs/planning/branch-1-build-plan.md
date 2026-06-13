@@ -1,6 +1,10 @@
 # Branch-1 Build Plan: Base+Overlay seam, engine-agnostic front-end, multi-agent orchestration
 
-Status: active (2026-06-13). Authority: ADR-019 (architecture), ADR-020/021
+Status: ✅ COMPLETE (2026-06-13) — all milestones M-A…M-F landed gate-green on
+main (commits 3922bbe, 3c9b37f, 8e65876, 3e3e1e9, e97582a). New surfaces: `subos`
+launcher, `/substrateos` warm activation, `labctl workflow`, `labctl conformance`,
+the Overlay seam, and the 7th (supply-chain) gate stage. ADRs 019–024.
+Authority: ADR-019 (architecture), ADR-020/021
 (research + upkeep), master research at `docs/research/master-research.md`.
 SubstrateOS-dictated: milestone-driven (ADR-010), **release gate green before
 every push**, no new heavyweight frameworks (ADR-002).

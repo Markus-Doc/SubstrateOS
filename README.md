@@ -85,13 +85,33 @@ latency equals the wake interval (default 10 minutes); `/stay` keeps it
 awake. Install on the box with `labctl trigger install` (unit template in
 `templates/trigger-systemd/`); threat model in SECURITY.md.
 
+## Engine-agnostic front-end & dynamic workflows (Phase 2)
+
+SubstrateOS is the substrate; the AI engine is a swappable kernel (ADR-019). One
+canonical spec (`substrate/methodology.md`) compiles to each engine's native
+files (`CLAUDE.md`, `AGENTS.md`, …) — write once, run on any engine.
+
+- `subos <engine>` — launch Claude/Codex/Gemini/Cursor as a SubstrateOS kernel
+  (compiles the instruction file, applies the permission posture; `--full-auto`
+  is opt-in, `--dry-run` inspects). The deterministic guarantees live in
+  `labctl`, not the model, so swapping engines never weakens safety.
+- `/substrateos` — in-session warm activation, compiled per engine.
+- `labctl workflow run "<mission>"` — multi-agent orchestration (architect →
+  workers → reviewer → judge; per-agent budget caps; verify-before-accept).
+- `labctl conformance` — the cross-engine MUST contract.
+
+Private customisation layers on via an **Overlay** (`SUBSTRATEOS_OVERLAY`,
+scaffold at `templates/overlay-example/`); the Base ships blank and runs naked.
+
 ## Repo Structure
 
+- substrate/          Canonical engine-neutral spec (compile source)
 - docs/research/      Source of truth research documents
 - docs/architecture/  System design and layer diagrams
 - docs/decisions/     Architecture Decision Records (ADRs)
 - docs/planning/      Phase plans and open questions
-- scripts/            Lab Controller CLI (Phase 1 build target)
+- scripts/            Lab Controller CLI (labctl + subos)
+- templates/          Capsule + overlay scaffolds
 - artifacts/          Build outputs, context packs, logs
 
 ## Do Not
