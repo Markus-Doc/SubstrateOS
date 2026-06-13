@@ -47,6 +47,9 @@ strict per-project execution isolation.
 
 ## Current Phase
 
+**Phase 2 — performance, scale, and the Lab operator host — is in progress.**
+Phase 1 (Core Loop) is complete; the history below records how we got here.
+
 Phase 1: Core Loop — first build landed 2026-06-11 (labctl CLI, ingestion,
 SQLite FTS5 memory, status dashboard, release gate, capsule template).
 Tool readiness landed 2026-06-12: gitleaks, Trivy, Semgrep (WSL), Docling and
