@@ -377,6 +377,10 @@ def handle_command(
             result = run_local_mission(root, arg, config.token_budget, spawn=spawn)
         except TriggerError as exc:
             return str(exc)
+        except Exception as exc:  # noqa: BLE001 — the never-raises contract: an
+            # accepted mission that dies on spawn must reply to the chat, not
+            # kill the duty cycle and leave the owner waiting on silence.
+            return f"mission failed before completion: {exc}"
         if result.breaker_tripped:
             return (
                 f"CIRCUIT BREAKER: token budget exceeded "
@@ -589,10 +593,10 @@ def install_systemd_unit(
 ) -> list[str]:
     """Render the unit template, install and enable it via sudo -n.
 
-    Substitutes __TRIGGER_USER__/__TRIGGER_REPO__/__TRIGGER_VENV__, copies the
-    rendered unit to /etc/systemd/system, reloads systemd, and enables the
-    service. Never starts it: it runs at next boot/resume. Returns the actions
-    performed, for the CLI to print.
+    Substitutes __TRIGGER_USER__/__TRIGGER_REPO__/__TRIGGER_VENV__/
+    __TRIGGER_HOME__, copies the rendered unit to /etc/systemd/system, reloads
+    systemd, and enables the service. Never starts it: it runs at next
+    boot/resume. Returns the actions performed, for the CLI to print.
     """
     run = runner or subprocess.run
     template = root / SYSTEMD_TEMPLATE_REL
@@ -602,6 +606,7 @@ def install_systemd_unit(
     text = text.replace("__TRIGGER_USER__", getpass.getuser())
     text = text.replace("__TRIGGER_REPO__", str(root.resolve()))
     text = text.replace("__TRIGGER_VENV__", sys.prefix)
+    text = text.replace("__TRIGGER_HOME__", str(Path.home()))
     rendered = _run_dir(root) / f"{SYSTEMD_UNIT_NAME}.service"
     rendered.write_text(text, encoding="utf-8")
 

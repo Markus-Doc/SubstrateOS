@@ -413,6 +413,17 @@ def test_run_command_over_cap_replies_error_without_spawn(repo: Path):
     assert "mission too long" in reply
 
 
+def test_run_spawn_failure_replies_instead_of_raising(repo: Path):
+    # The field failure of 2026-06-12: claude missing from the service PATH
+    # raised RuntimeError out of handle_command and killed the duty cycle.
+    def spawn(mission, cwd):
+        raise RuntimeError("claude CLI not found on PATH (needed for lab build)")
+
+    reply = handle_command(repo, config_for(), "run", "build the thing", spawn=spawn)
+    assert reply.startswith("mission failed before completion:")
+    assert "claude CLI not found" in reply
+
+
 # --- inhibit marker and suspend guards -------------------------------------------
 
 
@@ -580,6 +591,7 @@ TEMPLATE_UNIT = (
     "[Service]\n"
     "User=__TRIGGER_USER__\n"
     "WorkingDirectory=__TRIGGER_REPO__\n"
+    "Environment=PATH=__TRIGGER_VENV__/bin:__TRIGGER_HOME__/.local/bin:/usr/bin\n"
     "ExecStart=__TRIGGER_VENV__/bin/labctl trigger cycle\n"
 )
 
@@ -605,6 +617,7 @@ def test_install_substitutes_placeholders_and_enables(repo: Path):
     assert "__TRIGGER_" not in text  # no placeholder survives substitution
     assert f"User={getpass.getuser()}" in text
     assert f"WorkingDirectory={repo.resolve()}" in text
+    assert f"Environment=PATH={sys.prefix}/bin:{Path.home()}/.local/bin:/usr/bin" in text
     assert f"ExecStart={sys.prefix}/bin/labctl trigger cycle" in text
 
     assert calls == [

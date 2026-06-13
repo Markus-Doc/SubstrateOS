@@ -1,5 +1,5 @@
 # SubstrateOS remote trigger duty cycle (ADR-018).
-# Template unit: the three literal placeholder tokens are substituted by
+# Template unit: the four literal placeholder tokens are substituted by
 # `labctl trigger install`; see README.md in this directory for what they
 # mean and for the manual install fallback.
 
@@ -15,6 +15,9 @@ ConditionPathExists=__TRIGGER_REPO__/.env
 Type=simple
 User=__TRIGGER_USER__
 WorkingDirectory=__TRIGGER_REPO__
+# systemd's default PATH omits ~/.local/bin, where the claude CLI lives;
+# missions resolve it via shutil.which, so the unit must carry it explicitly.
+Environment=PATH=__TRIGGER_VENV__/bin:__TRIGGER_HOME__/.local/bin:/usr/local/bin:/usr/bin:/bin
 ExecStart=__TRIGGER_VENV__/bin/labctl trigger cycle
 Restart=on-failure
 RestartSec=10
