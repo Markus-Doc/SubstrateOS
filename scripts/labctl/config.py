@@ -27,7 +27,7 @@ class Manifest:
     project: str = "SubstrateOS"
     phase: str = "1"
     namespace: str = "substrateos"
-    source_of_truth: str = "MASTER_AI_System_Research.md"
+    source_of_truth: str = "docs/research/master-research.md"
     providers: dict[str, str] = field(
         default_factory=lambda: {
             "memory": "sqlite",

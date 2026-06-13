@@ -1,7 +1,9 @@
 # ADR-008: MASTER_AI_System_Research.md promoted to master research document
 
 Date: 2026-06-11
-Status: Accepted
+Status: Accepted (superseded in part by ADR-020, 2026-06-13 — the master research
+is now docs/research/master-research.md (v2); the v1 doc named below is archived
+at docs/research/archive/master-research-v1.md)
 
 ## Decision
 

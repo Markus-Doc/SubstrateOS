@@ -2,7 +2,7 @@
   "project": "SubstrateOS",
   "phase": "2",
   "namespace": "substrateos",
-  "source_of_truth": "MASTER_AI_System_Research.md",
+  "source_of_truth": "docs/research/master-research.md",
   "providers": {
     "memory": "sqlite",
     "ingest_web": "unconfigured (firecrawl optional, ADR-005)",

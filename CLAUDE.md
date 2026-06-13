@@ -17,7 +17,7 @@ close-out. Hybrid retrieval is deferred behind MemoryProvider (ADR-017).
 Build target remains the labctl package under scripts/.
 
 ## Core Rules
-- Treat MASTER_AI_System_Research.md (repo root) as the master research document (ADR-008).
+- Treat docs/research/master-research.md as the master research document (ADR-008, superseded-input per ADR-020).
 - docs/research/Final_Research-Agent_Brain.md is the project-specific research; the master document wins on conflict.
 - Do not introduce new tools, frameworks, or platforms not already in the research doc.
 - Code lives in scripts/ (labctl package) only; tests must pass before commit.
