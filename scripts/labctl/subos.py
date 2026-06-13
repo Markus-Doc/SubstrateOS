@@ -18,7 +18,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from labctl.compile_spec import compile_to, compile_warm_command
+from labctl.compile_spec import compile_skill, compile_to, compile_warm_command
 from labctl.config import find_repo_root
 from labctl.engines import EngineAdapter, get_adapter
 from labctl.handshake import build_handshake, render_handshake
@@ -76,6 +76,7 @@ def run(args: argparse.Namespace) -> int:
     try:
         written = compile_to(spec_path, plan.adapter, target, force=args.force)
         warm = compile_warm_command(plan.adapter, target, force=args.force)
+        skill = compile_skill(plan.adapter, target, force=args.force)
     except FileExistsError as exc:
         print(f"subos: {exc}", file=sys.stderr)
         return 2
@@ -85,6 +86,7 @@ def run(args: argparse.Namespace) -> int:
         print(f"posture       : {plan.posture}")
         print(f"instruction   : {written}")
         print(f"warm command  : {warm if warm else '(engine has no /substrateos slot)'}")
+        print(f"skill         : {skill if skill else '(engine has no skills dir)'}")
         print(f"launch argv   : {' '.join(plan.argv)}")
         print("---")
         print(render_handshake(build_handshake(plan.adapter), mode="cold"))
@@ -95,7 +97,14 @@ def run(args: argparse.Namespace) -> int:
         print(f"subos: engine binary not on PATH: {plan.argv[0]}", file=sys.stderr)
         return 127
     print(f"SubstrateOS active — launching {plan.adapter.name} ({plan.posture})")
-    return subprocess.run(plan.argv, cwd=target).returncode
+    try:
+        return subprocess.run(plan.argv, cwd=target).returncode
+    except FileNotFoundError:
+        print(f"subos: failed to launch {plan.argv[0]}", file=sys.stderr)
+        return 127
+    except KeyboardInterrupt:
+        print("\nsubos: interrupted", file=sys.stderr)
+        return 130
 
 
 def main(argv: list[str] | None = None) -> int:

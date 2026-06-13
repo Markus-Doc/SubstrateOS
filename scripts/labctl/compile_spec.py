@@ -101,3 +101,57 @@ def compile_warm_command(
         encoding="utf-8",
     )
     return out
+
+
+SKILL_DESCRIPTION = (
+    "Use when operating as SubstrateOS — drive labctl, never bypass the release "
+    "gate, respect capsule isolation and the review queue."
+)
+
+SKILL_TEMPLATE = """---
+name: substrateos
+description: {description}
+---
+{marker}
+
+# Operate as SubstrateOS
+
+Full rules: `{instruction_file}` and `substrate/methodology.md`. Core MUST tier,
+enforced by the labctl harness on any engine:
+
+- Drive `labctl`; never bypass the seven-stage release gate.
+- Respect capsule isolation and memory namespaces; honour the review queue.
+- Stay within the token circuit-breaker budget; no secrets in any file.
+- Report honestly and self-report capability gaps.
+"""
+
+
+def compile_skill(
+    adapter: EngineAdapter,
+    target_dir: Path,
+    *,
+    force: bool = False,
+) -> Path | None:
+    """Compile the progressive-disclosure ``substrateos`` SKILL.md for ``adapter``.
+
+    Returns the written path, or None if the engine declares no skills dir. The
+    instruction file is the lean orientation; this skill carries the on-demand
+    detail (progressive disclosure, per the master research).
+    """
+    if not adapter.skills_dir:
+        return None
+    out = Path(target_dir) / adapter.skills_dir / "substrateos" / "SKILL.md"
+    if not force and not is_managed(out):
+        raise FileExistsError(
+            f"{out} exists and is not SubstrateOS-managed; pass force=True to overwrite"
+        )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(
+        SKILL_TEMPLATE.format(
+            description=SKILL_DESCRIPTION,
+            marker=MANAGED_MARKER,
+            instruction_file=adapter.instruction_file,
+        ),
+        encoding="utf-8",
+    )
+    return out
