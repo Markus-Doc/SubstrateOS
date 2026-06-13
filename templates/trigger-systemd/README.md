@@ -17,6 +17,7 @@ enabled unit survives reboot and suspend alike.
 | `__TRIGGER_USER__` | The Unix user the cycle runs as (the owner's login user on the box) |
 | `__TRIGGER_REPO__` | Absolute path of the SubstrateOS checkout on the box (also the working directory, and where the gitignored `.env` lives) |
 | `__TRIGGER_VENV__` | Absolute path of the virtualenv whose `bin/labctl` provides the `trigger` command group |
+| `__TRIGGER_HOME__` | The owner's home directory, so the unit's `PATH` reaches `~/.local/bin` — systemd's default PATH does not, and that is where the `claude` CLI missions need lives |
 
 ## Install
 
@@ -35,6 +36,7 @@ Manual fallback (equivalent, if you prefer to see every step):
 sed -e "s|__TRIGGER_USER__|$USER|g" \
     -e "s|__TRIGGER_REPO__|$HOME/SubstrateOS|g" \
     -e "s|__TRIGGER_VENV__|$HOME/SubstrateOS/.venv|g" \
+    -e "s|__TRIGGER_HOME__|$HOME|g" \
     templates/trigger-systemd/substrateos-trigger.service \
   | sudo tee /etc/systemd/system/substrateos-trigger.service >/dev/null
 sudo systemctl daemon-reload
