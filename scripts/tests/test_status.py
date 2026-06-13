@@ -49,7 +49,8 @@ def make_fixture_repo(repo: Path) -> Path:
     (repo / "docs/decisions/ADR-102-section.md").write_text(ADR_SECTION_STATUS, encoding="utf-8")
     (repo / "docs/planning").mkdir(parents=True, exist_ok=True)
     (repo / "docs/planning/open-questions.md").write_text(OPEN_QUESTIONS, encoding="utf-8")
-    (repo / "MASTER_AI_System_Research.md").write_text("# Master\n", encoding="utf-8")
+    (repo / "docs/research").mkdir(parents=True, exist_ok=True)
+    (repo / "docs/research/master-research.md").write_text("# Master\n", encoding="utf-8")
     return repo
 
 
@@ -70,7 +71,7 @@ def test_parse_open_questions(repo: Path):
 
 def test_report_covers_all_oq006_fields(repo: Path):
     make_fixture_repo(repo)
-    ingest_file(repo, repo / "MASTER_AI_System_Research.md", "test-ns")
+    ingest_file(repo, repo / "docs/research/master-research.md", "test-ns")
     report = build_report(repo)
 
     assert report.manifest is not None and report.manifest.project == "SubstrateOS"
