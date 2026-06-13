@@ -13,6 +13,7 @@ import typer
 from labctl import capsule as capsule_mod
 from labctl import doctor as doctor_mod
 from labctl import gate as gate_mod
+from labctl import audit as audit_mod
 from labctl import conformance as conformance_mod
 from labctl import lab as lab_mod
 from labctl import orchestrate as orchestrate_mod
@@ -454,6 +455,44 @@ def workflow_run(
     typer.echo(f"metrics: {result.metrics}")
     if result.run_log is not None:
         typer.echo(f"run log: {result.run_log}")
+    if not result.accepted:
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def audit(
+    repo: Path = typer.Argument(Path("."), help="Repo to audit (default: this repo)"),
+    workers: int = typer.Option(2, help="Number of worker sub-agents"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Show the packet/plan; do not run"),
+) -> None:
+    """Codebase-wide audit as a Dynamic Workflow, BM25-grounded (Phase 2 M5)."""
+    root = _root()
+    repo_root = repo.resolve()
+    manifest = load_manifest(root)
+    namespace = manifest.namespace if manifest else "default"
+
+    def ground(query: str) -> list[str]:
+        with SQLiteMemory(root / MEMORY_DB_REL) as memory:
+            return [h.content for h in memory.search_keyword(namespace, query, limit=5)]
+
+    if dry_run:
+        packet = audit_mod.build_audit_packet(repo_root.name, ground(audit_mod.GROUNDING_QUERY))
+        typer.echo(packet.render())
+        typer.echo(f"workflow: architect -> {workers} worker(s) -> reviewer -> judge")
+        return
+
+    report_path = root / "artifacts" / "evidence" / f"audit-{repo_root.name}.md"
+    runner = orchestrate_mod.claude_stage_runner(root)
+    result = audit_mod.run_audit(
+        repo_root,
+        runner=runner,
+        ground=ground,
+        n_workers=workers,
+        log_dir=root / orchestrate_mod.RUN_LOG_DIR_REL,
+        report_path=report_path,
+    )
+    typer.echo(f"verdict: {result.workflow.verdict}")
+    typer.echo(f"report: {report_path}")
     if not result.accepted:
         raise typer.Exit(code=1)
 
