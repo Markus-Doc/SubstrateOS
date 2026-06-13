@@ -18,6 +18,7 @@ from labctl import review as review_mod
 from labctl import trigger as trigger_mod
 from labctl import usage as usage_mod
 from labctl.config import find_repo_root, init_project, load_manifest
+from labctl.extensions import load_overlay
 from labctl.ingest import ingest_source
 from labctl.memory import SQLiteMemory
 from labctl.providers import WebIngestError
@@ -416,6 +417,11 @@ def gate(
     if failed:
         raise typer.Exit(code=1)
     typer.echo("gate: all stages passed")
+
+
+# Mount any optional Overlay (ADR-019). No-op unless SUBSTRATEOS_OVERLAY is set;
+# a broken Overlay never takes down the Base CLI.
+load_overlay(app)
 
 
 if __name__ == "__main__":

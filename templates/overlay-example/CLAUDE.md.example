@@ -1,0 +1,15 @@
+# Overlay flair (example)
+
+This file is an *example* of the personal/private instruction "flair" your
+Overlay can carry. It is NOT loaded by the Base — copy it into your private
+overlay repo and adapt it. Keep the public Base's `CLAUDE.md` neutral; put
+personal preferences here.
+
+Guidance (keep it lean — every line loads on every request; ~150–200 instruction
+budget per the master research):
+
+- State your default engine and permission posture preferences here, not in the
+  Base. Example: "Default engine: claude; posture: full-auto on this host."
+- Reference your private skills/commands added via `substrateos_overlay.py`.
+- Never put secrets here; use the gitignored `.env` of your overlay repo.
+- Remember the one-way rule: this overlay depends on the Base, never the reverse.
