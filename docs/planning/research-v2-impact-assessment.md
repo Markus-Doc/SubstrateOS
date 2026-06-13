@@ -65,6 +65,25 @@ What v2 *does* surface is **five things worth a decision**, in priority order:
 Items 1, 2, and 5(a) touch the security posture directly and should land before
 the branch-1 multi-agent build adds skills and engines on top of the base.
 
+### Disposition (2026-06-13 — owner-reviewed, folded into branch-1's build plan)
+
+The owner reviewed this backlog and approved the scope. Final states (the build
+itself is owned by `docs/planning/branch-1-build-plan.md`; branch-2 = analysis +
+documentation only, to avoid two sessions editing one working tree):
+
+- **P1-A (Opus default)** — **IMPLEMENTED**: ADR-022 (Accepted), on `main`.
+- **P1-B (supply-chain gate)** — **APPROVED** (owner, 2026-06-13). Admitted as a
+  7th gate stage; delivered by branch-1 **M-F**; phase-2-plan locked decision #4
+  amended. M-F authors its own ADR with the implementation.
+- **P2-A (in-process MCP tool seam)** — **QUEUED** to Phase 2 **M4**
+  (in-container execution); reuses the M-B `ProviderRegistry`.
+- **P2-B (trace + agentic-eval metrics)** — **QUEUED** to branch-1 **M-E**
+  (Dynamic Workflows).
+- **P3-A (logged divergences)** — **DONE**: ADR-023 (Accepted), authored by
+  branch-2.
+
+No genuine contradiction was found, so nothing here reverses an existing ADR.
+
 ---
 
 ## Part 1 — Architecture layers vs v2
