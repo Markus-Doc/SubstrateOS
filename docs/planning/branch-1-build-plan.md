@@ -35,10 +35,16 @@ activation contract, compile-target table) with `substrate/README.md`.
 - Blank documented scaffold at `templates/overlay-example/`.
 - DoD: tests for load/no-op/error paths; gate green **with overlay absent**.
 
-### M-C — `subos` launcher + adapters
-`subos <engine>` thin wrapper; Claude adapter (CLAUDE.md + `.claude/skills/`),
-then Codex (`AGENTS.md`); engine-neutral permission posture mapping. DoD: launch
-+ confirmation banner; adapter unit tests.
+### M-C — `subos` launcher + adapters  ✅ DONE (2026-06-13)
+`subos <engine>` console script (`labctl/subos.py`): compiles the canonical spec
+into the engine's instruction file (managed-marker overwrite protection,
+`labctl/compile_spec.py`), assembles the launch plan, prints a confirmation
+banner, and execs the engine — with `--dry-run` for inspection. Engine adapters
+(`labctl/engines.py`) for claude/codex/gemini/cursor: binary, instruction file,
+skills dir, full-auto flag mapping. Base default posture = platform-default;
+`--full-auto` opt-in (ADR-019). 8 tests; ruff clean; proven end to end.
+Remaining for later: compiling `SKILL.md` skills (not just the instruction
+file).
 
 ### M-D — `/substrateos` warm activation
 In-session activation command compiled per engine; capability handshake (MUST vs
