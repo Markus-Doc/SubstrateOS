@@ -1,9 +1,10 @@
-"""Release gate: secret scan, lint, test, SAST, vuln-scan, and eval stages.
+"""Release gate: secret scan, lint, test, SAST, vuln-scan, eval, supply-chain.
 
 Stage 1 prefers gitleaks when available and falls back to a built-in
 regex scanner over git-tracked files. Stages 2 and 3 shell out to ruff
 and pytest. Stages 4-6 (Semgrep, Trivy, promptfoo per ADR-012/013) skip
-gracefully when their tool is absent unless strict mode is on.
+gracefully when their tool is absent unless strict mode is on. Stage 7
+is the supply-chain audit of skills/MCP/plugins (ADR-024).
 ``run_gate`` runs every stage and reports all results without
 short-circuiting.
 
@@ -252,6 +253,23 @@ def run_evals(root: Path) -> GateStage:
     )
 
 
+def run_supplychain(root: Path) -> GateStage:
+    """Supply-chain stage (ADR-024): flag unvetted skills/MCP/plugins.
+
+    Audits third-party tools against the trusted allowlist. The Base ships
+    blank, so this passes when SubstrateOS runs naked.
+    """
+    from labctl.supplychain import audit
+
+    result = audit(root)
+    if result.ok:
+        return GateStage(
+            "supply-chain", True,
+            f"supply-chain: {result.scanned} third-party tool(s), all vetted",
+        )
+    return GateStage("supply-chain", False, "supply-chain: " + "; ".join(result.findings))
+
+
 def run_gate(
     root: Path, include_tests: bool = True, strict: bool = False
 ) -> list[GateStage]:
@@ -263,7 +281,9 @@ def run_gate(
     results = [scan_secrets(root), run_ruff(root)]
     if include_tests:
         results.append(run_pytest(root))
-    results.extend([run_semgrep(root), run_trivy(root), run_evals(root)])
+    results.extend(
+        [run_semgrep(root), run_trivy(root), run_evals(root), run_supplychain(root)]
+    )
     if strict:
         results = [
             GateStage(r.name, False, f"{r.detail} (strict)")

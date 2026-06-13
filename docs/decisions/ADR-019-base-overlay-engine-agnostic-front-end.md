@@ -58,7 +58,7 @@ session ("branch 1").
 
 ### Why this is safe
 
-The deterministic guarantees — the six-stage release gate, the token circuit
+The deterministic guarantees — the (now seven-stage) release gate, the token circuit
 breaker, capsule isolation, and the review queue — are enforced by the
 **`labctl` harness, not the model**. Swapping the conversational engine swaps
 the driver, never the enforcer, so engine-agnosticism does not weaken safety.

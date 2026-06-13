@@ -53,9 +53,10 @@ Phase 1 (Core Loop) is complete; the history below records how we got here.
 Phase 1: Core Loop — first build landed 2026-06-11 (labctl CLI, ingestion,
 SQLite FTS5 memory, status dashboard, release gate, capsule template).
 Tool readiness landed 2026-06-12: gitleaks, Trivy, Semgrep (WSL), Docling and
-Firecrawl installed and smoke-tested; the release gate now runs six stages —
-secret scan, lint, tests, SAST, vuln scan, and a promptfoo eval (ADR-012) —
-with `labctl gate --strict` for pre-publish runs.
+Firecrawl installed and smoke-tested; the release gate now runs seven stages —
+secret scan, lint, tests, SAST, vuln scan, a promptfoo eval (ADR-012), and a
+supply-chain audit of skills/MCP/plugins (ADR-024) — with `labctl gate --strict`
+for pre-publish runs.
 Phase 1 completed 2026-06-12 (autonomous campaign per ADR-010): multi-source
 ingestion (text/PDF/web via Docling and Firecrawl), review queue with human
 promotion, capsule lifecycle (`labctl new` / `labctl build`) with a live-fired

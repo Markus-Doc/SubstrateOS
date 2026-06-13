@@ -100,7 +100,9 @@ def test_run_gate_runs_all_stages_without_short_circuit(
     monkeypatch.setattr(gate, "run_pytest", fake_run_pytest)
     results = gate.run_gate(repo)
     names = [r.name for r in results]
-    assert names == ["secret-scan", "lint", "tests", "sast", "vuln-scan", "evals"]
+    assert names == [
+        "secret-scan", "lint", "tests", "sast", "vuln-scan", "evals", "supply-chain"
+    ]
     assert not results[0].passed  # secret found, but later stages still ran
 
 
@@ -108,7 +110,7 @@ def test_run_gate_can_exclude_tests(tmp_path: Path, no_gitleaks):
     repo = _make_repo(tmp_path, {"README.md": "ok\n"})
     results = gate.run_gate(repo, include_tests=False)
     assert [r.name for r in results] == [
-        "secret-scan", "lint", "sast", "vuln-scan", "evals"
+        "secret-scan", "lint", "sast", "vuln-scan", "evals", "supply-chain"
     ]
 
 

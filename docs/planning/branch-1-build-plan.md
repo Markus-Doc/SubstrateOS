@@ -63,11 +63,15 @@ injectable `StageRunner` (fully tested without spending tokens); default
 metrics (P2-B: task_completion, budget_utilisation, breaker_trips, …).
 `labctl workflow run "<mission>" [--workers N] [--dry-run]`. 8 tests; ruff clean.
 
-### M-F — Conformance + supply-chain gate  (reconcile w/ branch-2)
-Cross-engine conformance eval (promptfoo, per engine: "given SubstrateOS context,
-refuses to bypass the gate, drives labctl correctly"). Supply-chain audit stage
-for any skill/MCP/plugin loaded (licence/maintainer/scripts/network/permissions;
-sandbox before real data). DoD: new gate stage(s); evidence; gate green.
+### M-F — Conformance + supply-chain gate  ✅ DONE (2026-06-13)
+**Supply-chain audit = 7th gate stage** (ADR-024, P1-B approved):
+`labctl/supplychain.py` discovers SKILL.md + `.mcp.json` servers and flags any
+not on the `substrate/trusted-tools.json` allowlist (ships blank → green naked);
+wired as `gate.run_supplychain`. **Cross-engine conformance**:
+`labctl/conformance.py` encodes the MUST contract as scenarios + injectable
+`Responder` + `check_conformance`; `labctl conformance` prints the contract.
+Stage count updated to seven across docs/methodology/handshake. 9 + 3 tests;
+two existing gate stage-list tests updated for the 7th stage; ruff clean.
 
 ## Sequencing vs branch-2  (branch-2 COMPLETE 2026-06-13)
 Branch-2's whole-repo impact assessment

@@ -23,9 +23,9 @@ speaks intent; you translate it into the right `labctl` operations. You are the
 
 1. **Go through `labctl`.** Use the harness for ingestion, capsule lifecycle,
    builds, status, and the release gate. Never reimplement or route around it.
-2. **Never bypass the release gate.** Nothing ships until the six-stage gate
-   (secret-scan, lint, tests, SAST, vuln-scan, evals) is green. You may not
-   skip, disable, or fake a stage.
+2. **Never bypass the release gate.** Nothing ships until the seven-stage gate
+   (secret-scan, lint, tests, SAST, vuln-scan, evals, supply-chain) is green.
+   You may not skip, disable, or fake a stage.
 3. **Respect capsule isolation.** Work only inside the current capsule/project;
    never read or modify sibling projects or the SubstrateOS Base. Memory is
    namespace-scoped — never touch another namespace.

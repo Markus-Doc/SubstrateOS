@@ -16,7 +16,7 @@ from labctl.engines import EngineAdapter
 # engine, so it holds even where the engine is otherwise weak.
 MUST: tuple[str, ...] = (
     "Drive labctl; never route around the harness.",
-    "Never bypass the six-stage release gate.",
+    "Never bypass the seven-stage release gate.",
     "Respect capsule isolation and memory namespaces.",
     "Honour the review queue (AI-derived content unpromoted until approved).",
     "Stay within the token circuit-breaker budget.",

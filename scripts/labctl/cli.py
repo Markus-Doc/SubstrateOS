@@ -13,6 +13,7 @@ import typer
 from labctl import capsule as capsule_mod
 from labctl import doctor as doctor_mod
 from labctl import gate as gate_mod
+from labctl import conformance as conformance_mod
 from labctl import lab as lab_mod
 from labctl import orchestrate as orchestrate_mod
 from labctl import review as review_mod
@@ -411,7 +412,7 @@ def gate(
         help="Fail stages whose tool is missing instead of skipping them.",
     ),
 ) -> None:
-    """Run the release gate: secret scan, lint, tests, SAST, vuln scan, evals."""
+    """Run the release gate: secret scan, lint, tests, SAST, vuln scan, evals, supply-chain."""
     root = _root()
     results = gate_mod.run_gate(root, strict=strict)
     failed = False
@@ -455,6 +456,18 @@ def workflow_run(
         typer.echo(f"run log: {result.run_log}")
     if not result.accepted:
         raise typer.Exit(code=1)
+
+
+@app.command()
+def conformance() -> None:
+    """Print the cross-engine conformance contract (MUST scenarios, ADR-019)."""
+    typer.echo("SubstrateOS cross-engine conformance suite:")
+    for sc in conformance_mod.SCENARIOS:
+        typer.echo(f"  [{sc.expect:>6}] {sc.prompt}")
+        typer.echo(f"           -> {sc.rationale}")
+    typer.echo(
+        "\nAny certified engine must satisfy all scenarios given SubstrateOS context."
+    )
 
 
 # Mount any optional Overlay (ADR-019). No-op unless SUBSTRATEOS_OVERLAY is set;
