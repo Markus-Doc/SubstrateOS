@@ -44,6 +44,30 @@ def test_judge_reject_not_accepted(tmp_path: Path):
     assert res.verdict.upper().startswith("REJECT")
 
 
+def test_verdict_accepts_robust_to_preamble():
+    from labctl.orchestrate import _verdict_accepts
+
+    # verdict after a verification preamble (the real-world failure case)
+    assert _verdict_accepts("Let me verify.\nGate is green.\nACCEPT - all good")
+    assert not _verdict_accepts("Checking the diff...\nREJECT: tests missing")
+    # markdown / labelled verdicts
+    assert _verdict_accepts("**ACCEPT**")
+    assert _verdict_accepts("Verdict: ACCEPT")
+    # mere mentions mid-sentence are NOT a verdict; no explicit token => not accepted
+    assert not _verdict_accepts("I will ACCEPT or REJECT once I have verified.")
+    assert not _verdict_accepts("Everything passed and looks correct.")
+
+
+def test_workflow_accepts_judge_with_preamble(tmp_path: Path):
+    def runner(role, name, prompt, budget):
+        if role == "judge":
+            return ("I verified the gate is green.\nACCEPT", 10, False)
+        return ("ok", 10, False)
+
+    res = run_workflow("m", runner=runner, n_workers=1, log_dir=tmp_path)
+    assert res.accepted
+
+
 def test_architect_breaker_aborts_early(tmp_path: Path):
     def runner(role, name, prompt, budget):
         if role == "architect":
