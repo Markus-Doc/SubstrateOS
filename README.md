@@ -98,6 +98,10 @@ files (`CLAUDE.md`, `AGENTS.md`, …) — write once, run on any engine.
 - `/substrateos` — in-session warm activation, compiled per engine.
 - `labctl workflow run "<mission>"` — multi-agent orchestration (architect →
   workers → reviewer → judge; per-agent budget caps; verify-before-accept).
+- `labctl audit <repo>` — codebase-quality audit as that workflow, BM25-grounded
+  over the repo's memory namespace, producing a findings report (ADR-025).
+- `labctl build --container` — run a capsule build in Docker; the circuit breaker
+  kills the whole container; OAuth token injected by name only (ADR-025).
 - `labctl conformance` — the cross-engine MUST contract.
 
 Private customisation layers on via an **Overlay** (`SUBSTRATEOS_OVERLAY`,
