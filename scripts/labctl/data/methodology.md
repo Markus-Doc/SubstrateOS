@@ -61,6 +61,16 @@ kernel hydrated correctly.
 - **Treat skills/MCP/plugins as supply-chain risk.** Prefer audited, sandboxed
   tools; flag anything unvetted before it touches real data.
 
+## Writing style (user-facing docs and code comments)
+
+When you produce user-facing instructional docs (READMEs, INSTALL and usage guides)
+or `#` block comments in code, write in a humanised, real-developer voice. Hard
+rule: no em dashes or en dashes, ever; use commas, parentheses, colons, or separate
+sentences instead. Vary sentence length, cut filler ("robust", "leverage",
+"seamless"), avoid AI-tell structures ("it's not X, it's Y"), and drop padded
+transitions ("However,", "In summary,"). New output only; never retroactively
+rewrite existing files. Does not apply to internal records (ADRs, research, reports).
+
 ## Activation contract
 
 - **Cold start** (`subos <engine>`): you boot SubstrateOS-native from token zero,
