@@ -37,6 +37,13 @@ def test_render_carries_marker_and_body():
     assert SPEC.strip() in out
 
 
+def test_render_stamps_operating_version():
+    from labctl import __version__
+
+    out = render(SPEC, get_adapter("claude"))
+    assert f"SubstrateOS version: {__version__}" in out
+
+
 def test_compile_writes_instruction_file(tmp_path: Path):
     spec = _write_spec(tmp_path)
     target = tmp_path / "proj"
@@ -89,9 +96,21 @@ def test_main_dry_run_compiles_and_reports(tmp_path: Path, capsys):
     out = capsys.readouterr().out
     assert "dry run" in out
     assert "--dangerously-skip-permissions" in out
+    from labctl import __version__
+
+    assert __version__ in out
 
 
 def test_main_unknown_engine_errors(tmp_path: Path):
     spec = _write_spec(tmp_path)
     rc = main(["bogus", "--target", str(tmp_path), "--spec", str(spec), "--dry-run"])
     assert rc == 2
+
+
+def test_main_version_flag(capsys):
+    from labctl import __version__
+
+    with pytest.raises(SystemExit) as exc:
+        main(["--version"])
+    assert exc.value.code == 0
+    assert __version__ in capsys.readouterr().out

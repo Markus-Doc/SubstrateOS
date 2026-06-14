@@ -18,6 +18,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from labctl import __version__
 from labctl.compile_spec import compile_skill, compile_to, compile_warm_command
 from labctl.config import find_repo_root
 from labctl.engines import EngineAdapter, get_adapter
@@ -82,6 +83,7 @@ def run(args: argparse.Namespace) -> int:
         return 2
 
     if args.dry_run:
+        print(f"subos version : {__version__}")
         print(f"engine        : {plan.adapter.name}")
         print(f"posture       : {plan.posture}")
         print(f"instruction   : {written}")
@@ -96,7 +98,10 @@ def run(args: argparse.Namespace) -> int:
     if shutil.which(plan.argv[0]) is None:
         print(f"subos: engine binary not on PATH: {plan.argv[0]}", file=sys.stderr)
         return 127
-    print(f"SubstrateOS active — launching {plan.adapter.name} ({plan.posture})")
+    print(
+        f"SubstrateOS v{__version__} active — launching {plan.adapter.name} "
+        f"({plan.posture}); the engine will confirm the kernel on boot."
+    )
     try:
         return subprocess.run(plan.argv, cwd=target).returncode
     except FileNotFoundError:
@@ -110,6 +115,9 @@ def run(args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="subos", description="Launch an AI engine as a SubstrateOS kernel."
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"SubstrateOS (subos) {__version__}"
     )
     parser.add_argument("engine", help="engine to launch (claude, codex, gemini, cursor)")
     parser.add_argument(
