@@ -2,40 +2,66 @@
 
 A thin, local-first AI orchestration harness. Not a platform.
 
-## How to Use (Start Here — No Experience Needed)
+## Install (Start Here — No Experience Needed)
 
-Everything is driven by one command: **`labctl`**. Think of it as the remote
-control for the whole system. You never need to touch the internals.
+One installer, then `subos claude` works from any directory in a fresh shell.
+Full step-by-step for all three platforms, plus troubleshooting:
+**[INSTALL.md](INSTALL.md)**.
 
-**One-time setup.** Open PowerShell in this folder and paste these two lines
-(on Linux/WSL use `python3 -m venv` and `.venv/bin/` instead):
+**Windows (PowerShell)** — in a clone of this repo:
+
+```powershell
+.\install.ps1
+```
+
+**Linux / macOS** — in a clone of this repo:
+
+```sh
+./install.sh
+```
+
+The installer checks Python (>= 3.11), installs the `labctl` + `subos` commands
+with `pipx` (isolated, user-scope), and verifies with `subos --version` and
+`labctl doctor`. **Open a new terminal afterwards** so PATH picks up the new
+commands. Personal full-auto is opt-in: add `-FullAutoDefault` (Windows) or
+`--full-auto-default` (Linux/macOS).
+
+## How to Use
+
+Everything is driven by **`labctl`** (the harness) and **`subos`** (launch an AI
+engine as a SubstrateOS kernel). After installing, run them from anywhere:
+
+```powershell
+subos claude --dry-run   # preview launching Claude as a SubstrateOS kernel
+subos claude             # launch it for real (Codex / Gemini / Cursor also work)
+labctl doctor            # "Are you healthy?" - checks your environment + install
+labctl status            # "What's going on, and what should I do next?"
+labctl ingest <file.md>  # "Read this and remember it" - adds a source to memory
+labctl gate              # "Check my work" - secret scan, lint, tests; before any push
+```
+
+**If you are ever lost:** run `labctl status` and do whatever it lists under
+"next recommended actions". First time in a fresh clone, run `labctl init` once
+to create the manifest and folders (safe to re-run). Any command explains itself
+with `--help`.
+
+Power-user flags: `labctl ingest <file> --namespace <ns>` indexes into a specific
+memory namespace; `--source-link <url>` records where a file came from. Ingested
+output lands in `artifacts/ingest/`, memory in `artifacts/memory.sqlite` (both
+local-only, gitignored).
+
+**Contributors / development install.** To hack on SubstrateOS itself, use an
+editable install instead of the global one:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -e "scripts[dev]"
+.\.venv\Scripts\python -m pytest scripts/tests -q   # run the tests
 ```
 
-**Day-to-day.** Four buttons on the remote, in the order you'd normally press them:
-
-```powershell
-.\.venv\Scripts\labctl doctor    # "Are you healthy?"  - checks your environment
-.\.venv\Scripts\labctl ingest <file.md>   # "Read this and remember it" - adds a source to memory
-.\.venv\Scripts\labctl status    # "What's going on, and what should I do next?"
-.\.venv\Scripts\labctl gate      # "Check my work" - secret scan, lint, tests; run before any push
-```
-
-**If you are ever lost:** run `labctl status` and do whatever it lists under
-"next recommended actions". That is the whole operating manual.
-
-First time in a fresh clone, run `.\.venv\Scripts\labctl init` once to create
-the manifest and folders (safe to re-run). Any command explains itself with
-`--help`.
-
-Power-user flags: `labctl ingest <file> --namespace <ns>` indexes into a
-specific memory namespace; `--source-link <url>` records where a file came
-from. Ingested output lands in `artifacts/ingest/`, memory in
-`artifacts/memory.sqlite` (both local-only, gitignored). Tests live in
-`scripts/tests` — run them with `.\.venv\Scripts\python -m pytest scripts/tests -q`.
+After editing `substrate/methodology.md`, run `python scripts/sync_spec_data.py`
+to refresh the copy bundled with the installed package (a drift-guard test
+enforces they match).
 
 ## What This Is
 
@@ -117,6 +143,9 @@ scaffold at `templates/overlay-example/`); the Base ships blank and runs naked.
 - scripts/            Lab Controller CLI (labctl + subos)
 - templates/          Capsule + overlay scaffolds
 - artifacts/          Build outputs, context packs, logs
+- install.ps1 / install.sh   One-command installers (Windows / Linux-macOS)
+- Dockerfile          Golden image — the same unit runs locally and on EKS (ADR-026)
+- INSTALL.md          Full cross-platform install guide
 
 ## Do Not
 

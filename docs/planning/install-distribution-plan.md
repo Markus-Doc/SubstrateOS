@@ -1,6 +1,8 @@
 # Install & Distribution Build Plan
 
-Status: primed 2026-06-14 — ready for a build session. Decision of record: ADR-026.
+Status: EXECUTED 2026-06-14 — milestones M1–M9 implemented; ADR-026 moved to
+Accepted. Owner-gated remainder: live `docker build`, a real Linux/macOS install
+run, any live engine spend. Decision of record: ADR-026.
 
 ## Goal
 

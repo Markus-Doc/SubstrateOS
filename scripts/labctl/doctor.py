@@ -158,6 +158,50 @@ def _check_lab_config(root: Path) -> CheckResult:
     )
 
 
+def _check_subos_on_path() -> CheckResult:
+    """Install-health: is the `subos` console script on PATH (ADR-026)?"""
+    path = shutil.which("subos")
+    return CheckResult(
+        "subos-on-path",
+        path is not None,
+        "warning",
+        path if path else "not on PATH (run install.ps1/install.sh, or `pipx ensurepath`)",
+    )
+
+
+def _check_spec_resolvable() -> CheckResult:
+    """Install-health: is the canonical spec resolvable from any directory (ADR-026)?
+
+    Verifies the spec bundled as package data is present, which is what lets a
+    globally installed `subos` find its spec outside the repo / in a container.
+    """
+    from labctl.subos import _packaged_spec_path
+
+    spec = _packaged_spec_path()
+    ok = spec is not None and spec.is_file()
+    return CheckResult(
+        "spec-resolvable",
+        ok,
+        "warning",
+        f"packaged spec at {spec}" if ok else "packaged spec missing (reinstall the package)",
+    )
+
+
+def _check_engines() -> CheckResult:
+    """Install-health: is at least one supported engine binary on PATH (ADR-019/026)?"""
+    from labctl.engines import ADAPTERS
+
+    found = [name for name, adapter in ADAPTERS.items() if shutil.which(adapter.binary)]
+    return CheckResult(
+        "engines",
+        bool(found),
+        "warning",
+        f"on PATH: {', '.join(found)}"
+        if found
+        else f"none of {', '.join(ADAPTERS)} on PATH (install one to launch via subos)",
+    )
+
+
 def run_checks(root: Path) -> list[CheckResult]:
     return [
         _check_python(),
@@ -173,6 +217,9 @@ def run_checks(root: Path) -> list[CheckResult]:
         _check_docling(),
         _check_firecrawl_key(root),
         _check_lab_config(root),
+        _check_subos_on_path(),
+        _check_spec_resolvable(),
+        _check_engines(),
     ]
 
 

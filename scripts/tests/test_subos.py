@@ -6,11 +6,20 @@ from pathlib import Path
 
 import pytest
 
+from labctl import subos
 from labctl.compile_spec import MANAGED_MARKER, compile_to, is_managed, render
 from labctl.engines import get_adapter
 from labctl.subos import build_plan, main
 
 SPEC = "# SubstrateOS Methodology\n\nMUST go through labctl.\n"
+
+
+def _raise_no_repo(*_args, **_kwargs):
+    raise FileNotFoundError("no repo root (simulated)")
+
+
+def _posture_line(out: str) -> str:
+    return next(line for line in out.splitlines() if line.startswith("posture"))
 
 
 def _write_spec(tmp: Path) -> Path:
@@ -114,3 +123,55 @@ def test_main_version_flag(capsys):
         main(["--version"])
     assert exc.value.code == 0
     assert __version__ in capsys.readouterr().out
+
+
+# --- spec-as-package-data fallback (ADR-026) ---
+
+def test_dry_run_without_spec_uses_packaged(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    # Outside any repo, the resolver falls back to the bundled package-data spec.
+    monkeypatch.setattr(subos, "find_repo_root", _raise_no_repo)
+    target = tmp_path / "proj"
+    rc = main(["claude", "--target", str(target), "--dry-run"])
+    assert rc == 0
+    # CLAUDE.md is only written if the packaged spec was found and compiled.
+    compiled = (target / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "SubstrateOS" in compiled
+
+
+def test_packaged_spec_path_resolves():
+    spec = subos._packaged_spec_path()
+    assert spec is not None
+    assert spec.is_file()
+    assert spec.name == "methodology.md"
+
+
+# --- full-auto env posture hook (ADR-026 §6) ---
+
+def test_full_auto_env_default(tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch):
+    spec = _write_spec(tmp_path)
+    target = tmp_path / "proj"
+    monkeypatch.setenv("SUBSTRATEOS_FULL_AUTO", "1")
+    rc = main(["claude", "--target", str(target), "--spec", str(spec), "--dry-run"])
+    assert rc == 0
+    assert _posture_line(capsys.readouterr().out).endswith("full-auto")
+
+
+def test_platform_default_overrides_env(tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch):
+    spec = _write_spec(tmp_path)
+    target = tmp_path / "proj"
+    monkeypatch.setenv("SUBSTRATEOS_FULL_AUTO", "1")
+    rc = main(
+        ["claude", "--target", str(target), "--spec", str(spec),
+         "--platform-default", "--dry-run"]
+    )
+    assert rc == 0
+    assert _posture_line(capsys.readouterr().out).endswith("platform-default")
+
+
+def test_env_unset_is_platform_default(tmp_path: Path, capsys, monkeypatch: pytest.MonkeyPatch):
+    spec = _write_spec(tmp_path)
+    target = tmp_path / "proj"
+    monkeypatch.delenv("SUBSTRATEOS_FULL_AUTO", raising=False)
+    rc = main(["claude", "--target", str(target), "--spec", str(spec), "--dry-run"])
+    assert rc == 0
+    assert _posture_line(capsys.readouterr().out).endswith("platform-default")
