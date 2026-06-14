@@ -1,0 +1,48 @@
+{
+  "_comment": "ADR-021 research/review watch-list. `labctl research` re-synthesises current AI best-practice research (via RESYNTH) and diffs the candidate against these watch items to detect when a current SubstrateOS choice ages out, surfacing a human-promoted review report (never auto-merged). The public Base ships this default list; an Overlay may extend or replace it.",
+  "version": 1,
+  "items": [
+    {
+      "name": "instruction compile formats",
+      "why": "SKILL.md / AGENTS.md and the per-engine instruction files are the write-once compile targets (ADR-019); if the ecosystem standard shifts, the compiler must follow or the Base ages out.",
+      "current_choice": "SKILL.md + AGENTS.md + per-engine files (CLAUDE.md, GEMINI.md, .cursor/rules/substrateos.mdc)",
+      "adr_refs": ["ADR-019", "ADR-020"]
+    },
+    {
+      "name": "supported conversational engines",
+      "why": "The engine-agnostic front-end targets a fixed adapter set; new frontier engines or deprecations change the adapter table (labctl/engines.py).",
+      "current_choice": "claude, codex, gemini, cursor",
+      "adr_refs": ["ADR-019"]
+    },
+    {
+      "name": "in-container execution engine",
+      "why": "Bespoke capsule execution vs an external agent runtime (e.g. OpenHands) is a named contingency to switch on a signal.",
+      "current_choice": "bespoke capsule (headless claude -p in Docker)",
+      "adr_refs": ["ADR-025", "ADR-002"]
+    },
+    {
+      "name": "dynamic-workflow / ultracode surface",
+      "why": "Claude Code's ultracode / Dynamic-Workflows feature surface is the explicit watch item for ADR-027's deferred escalation hatch.",
+      "current_choice": "OS-native orchestrate.py (architect -> workers -> reviewer -> judge); ultracode not integrated",
+      "adr_refs": ["ADR-027", "ADR-019"]
+    },
+    {
+      "name": "default model",
+      "why": "The default conversational / judge model tier; reassessed as frontier models change.",
+      "current_choice": "Opus 4.8",
+      "adr_refs": ["ADR-022"]
+    },
+    {
+      "name": "memory retrieval",
+      "why": "Keyword BM25 vs vector/hybrid retrieval; hybrid stays deferred behind MemoryProvider until a quality need or hardware is shown.",
+      "current_choice": "SQLite FTS5 BM25 keyword",
+      "adr_refs": ["ADR-009", "ADR-017"]
+    },
+    {
+      "name": "governing research",
+      "why": "The master research document itself is the RESYNTH output; this item tracks its currency against the live frontier.",
+      "current_choice": "docs/research/master-research.md (v2, ADR-020)",
+      "adr_refs": ["ADR-008", "ADR-020"]
+    }
+  ]
+}

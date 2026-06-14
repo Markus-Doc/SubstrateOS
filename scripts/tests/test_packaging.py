@@ -11,7 +11,7 @@ import labctl
 from labctl import subos
 from labctl.config import find_repo_root
 
-BUNDLED_FILES = ("methodology.md", "trusted-tools.json")
+BUNDLED_FILES = ("methodology.md", "trusted-tools.json", "research-watch.json")
 
 
 def test_version_single_sourced():
