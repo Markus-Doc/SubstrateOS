@@ -154,7 +154,12 @@ def run(args: argparse.Namespace) -> int:
         print("(dry run — engine not launched)")
         return 0
 
-    if shutil.which(plan.argv[0]) is None:
+    # Resolve to the full path: on Windows a bare name only matches `<name>.exe`,
+    # but npm-installed engines are `<name>.CMD`/`.ps1` (no .exe), so launching the
+    # bare name raises FileNotFoundError. shutil.which honours PATHEXT and returns
+    # the launchable path on every platform.
+    binary = shutil.which(plan.argv[0])
+    if binary is None:
         print(f"subos: engine binary not on PATH: {plan.argv[0]}", file=sys.stderr)
         return 127
     print(
@@ -162,9 +167,9 @@ def run(args: argparse.Namespace) -> int:
         f"({plan.posture}); the engine will confirm the kernel on boot."
     )
     try:
-        return subprocess.run(plan.argv, cwd=target).returncode
-    except FileNotFoundError:
-        print(f"subos: failed to launch {plan.argv[0]}", file=sys.stderr)
+        return subprocess.run([binary, *plan.argv[1:]], cwd=target).returncode
+    except OSError as exc:
+        print(f"subos: failed to launch {plan.argv[0]}: {exc}", file=sys.stderr)
         return 127
     except KeyboardInterrupt:
         print("\nsubos: interrupted", file=sys.stderr)

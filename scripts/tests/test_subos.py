@@ -175,3 +175,33 @@ def test_env_unset_is_platform_default(tmp_path: Path, capsys, monkeypatch: pyte
     rc = main(["claude", "--target", str(target), "--spec", str(spec), "--dry-run"])
     assert rc == 0
     assert _posture_line(capsys.readouterr().out).endswith("platform-default")
+
+
+# --- launch resolution (Windows npm shim: claude.CMD, not claude.exe) ---
+
+def test_launch_uses_resolved_binary_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    spec = _write_spec(tmp_path)
+    target = tmp_path / "proj"
+    captured: dict = {}
+    monkeypatch.setattr(subos.shutil, "which", lambda name: "C:/tools/claude.CMD")
+
+    class _Result:
+        returncode = 0
+
+    def fake_run(argv, cwd=None):
+        captured["argv"] = list(argv)
+        return _Result()
+
+    monkeypatch.setattr(subos.subprocess, "run", fake_run)
+    rc = main(["claude", "--target", str(target), "--spec", str(spec)])
+    assert rc == 0
+    # the resolved path must be launched, never the bare name
+    assert captured["argv"][0] == "C:/tools/claude.CMD"
+
+
+def test_launch_engine_not_on_path_returns_127(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    spec = _write_spec(tmp_path)
+    target = tmp_path / "proj"
+    monkeypatch.setattr(subos.shutil, "which", lambda name: None)
+    rc = main(["claude", "--target", str(target), "--spec", str(spec)])
+    assert rc == 127
