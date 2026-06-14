@@ -14,6 +14,7 @@ JSONL trace and computes agentic-eval trace metrics (branch-2 P2-B).
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
@@ -41,8 +42,9 @@ REVIEWER_PROMPT = (
 )
 JUDGE_PROMPT = (
     "You are the JUDGE. Mission:\n{mission}\n\nReviewer findings:\n{findings}\n\n"
-    "Verify before accepting. Reply on the first line with ACCEPT or REJECT and "
-    "a one-line reason."
+    "Verify before accepting. Your reply MUST begin with a line containing exactly "
+    "one word — ACCEPT or REJECT — and nothing else on that line. Put any reasoning "
+    "on the lines that follow. Do not write any text before the verdict word."
 )
 
 
@@ -103,10 +105,26 @@ class WorkflowResult:
     metrics: dict = field(default_factory=dict)
 
 
+# A verdict line: ACCEPT/REJECT at the start of a line, allowing leading markdown
+# (>, *, _, #, -) and an optional "Verdict:" label. Mere mentions of the words
+# mid-sentence (e.g. "I will ACCEPT or REJECT after checking") do not match.
+_VERDICT_RE = re.compile(r"^[\s>*_#-]*(?:verdict\s*[:=-]?\s*)?(accept|reject)\b", re.IGNORECASE)
+
+
 def _verdict_accepts(text: str) -> bool:
-    first = text.strip().splitlines()[0] if text.strip() else ""
-    upper = first.upper()
-    return "ACCEPT" in upper and "REJECT" not in upper
+    """Extract the judge's ACCEPT/REJECT verdict, robust to a verification preamble.
+
+    The judge is told to lead with the verdict word, but real judges sometimes add
+    a preamble first. Scan every line for an explicit verdict token and take the
+    last such line as the final decision. If no explicit verdict token appears
+    anywhere, do NOT accept — verify-before-accept is deliberately conservative.
+    """
+    verdict: str | None = None
+    for line in text.splitlines():
+        match = _VERDICT_RE.match(line.strip())
+        if match:
+            verdict = match.group(1).lower()
+    return verdict == "accept"
 
 
 def _metrics(stages: list[StageResult], accepted: bool) -> dict:

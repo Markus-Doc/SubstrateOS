@@ -8,6 +8,10 @@ One installer, then `subos claude` works from any directory in a fresh shell.
 Full step-by-step for all three platforms, plus troubleshooting:
 **[INSTALL.md](INSTALL.md)**.
 
+**First, get the code:** `git clone` this repository (or download the ZIP from
+GitHub and unzip it), then open a terminal in that folder and run the installer
+for your OS.
+
 **Windows (PowerShell)** — in a clone of this repo:
 
 ```powershell
@@ -62,6 +66,42 @@ python -m venv .venv
 After editing `substrate/methodology.md`, run `python scripts/sync_spec_data.py`
 to refresh the copy bundled with the installed package (a drift-guard test
 enforces they match).
+
+## Going further — from first run to power user
+
+A natural progression once `subos`/`labctl` are installed. Each step builds on the
+last; every command explains itself with `--help`.
+
+1. **Talk to your OS.** `subos claude` launches Claude as a SubstrateOS kernel — an
+   interactive session that drives the harness for you. Start here for any task.
+   Swap engines any time: `subos codex` / `subos gemini` / `subos cursor`.
+2. **Preview, then choose your posture.** `subos claude --dry-run` shows exactly what
+   will happen without launching. The default posture is safe; `--full-auto` opts
+   into the engine's full-auto mode and `--platform-default` forces safe. Make
+   full-auto your personal default with the `SUBSTRATEOS_FULL_AUTO` setting.
+3. **Feed the brain.** `labctl ingest <file|url>` adds a source to local memory.
+   AI-derived summaries enter a **review queue** (`labctl review list` →
+   `labctl review approve`) — nothing is trusted until you promote it.
+4. **Check your work.** `labctl gate` runs the seven-stage release gate (secret scan,
+   lint, tests, SAST, vuln scan, evals, supply-chain) — run it before every push;
+   `labctl gate --strict` before publishing.
+5. **Orchestrate.** `labctl workflow run "<mission>"` runs a multi-agent build
+   (architect → workers → reviewer → judge); `labctl audit <repo>` audits a codebase
+   the same way; `labctl new` / `labctl build` scaffold and run isolated **capsules**.
+6. **Stay current.** `labctl research` keeps the OS aligned with AI best practices —
+   it drives RESYNTH, diffs the result against your ADRs/tooling, and surfaces a
+   review report. Guide: [docs/planning/research-pipeline.md](docs/planning/research-pipeline.md).
+7. **Go remote / always-on.** `labctl lab` operates a wake-on-demand box; `labctl
+   trigger` lets you message it (Telegram) and have it work while you're away.
+8. **Make it yours.** Layer private settings via an **Overlay** (`SUBSTRATEOS_OVERLAY`,
+   scaffold at `templates/overlay-example/`); the public Base ships blank.
+
+**Billing note (interactive vs headless).** Talking to `subos claude` runs on your
+normal subscription — including all the autonomous work it does for you in that
+session. Only commands that spawn their *own* background agents — `labctl audit`,
+`labctl build`, `labctl workflow run`, and `labctl research --headless` — use the
+unattended ("Agent SDK") lane. Everything is interactive (subscription) by default;
+the headless lane is always opt-in.
 
 ## What This Is
 
