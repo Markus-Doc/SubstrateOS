@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from labctl.compile_spec import MANAGED_MARKER
 from labctl.gate import run_supplychain
 from labctl.supplychain import audit
 
@@ -13,6 +14,12 @@ def _skill(root: Path, name: str) -> None:
     d = root / ".claude/skills" / name
     d.mkdir(parents=True)
     (d / "SKILL.md").write_text(f"# {name}\n", encoding="utf-8")
+
+
+def _generated_skill(root: Path, name: str) -> None:
+    d = root / ".claude/skills" / name
+    d.mkdir(parents=True)
+    (d / "SKILL.md").write_text(f"{MANAGED_MARKER}\n# {name}\n", encoding="utf-8")
 
 
 def _allowlist(root: Path, names: list[str]) -> None:
@@ -41,6 +48,25 @@ def test_allowlisted_skill_passes(tmp_path: Path):
     _allowlist(tmp_path, ["scraper"])
     result = audit(tmp_path)
     assert result.ok
+
+
+def test_generated_substrateos_skill_is_first_party(tmp_path: Path):
+    # The OS's own compiled skill carries the generated marker and is not a
+    # third-party supply-chain risk, so the naked Base stays green (ADR-030).
+    _generated_skill(tmp_path, "substrateos")
+    result = audit(tmp_path)
+    assert result.ok
+    assert result.scanned == 0
+
+
+def test_generated_skill_excluded_but_third_party_still_flagged(tmp_path: Path):
+    _generated_skill(tmp_path, "substrateos")
+    _skill(tmp_path, "scraper")
+    result = audit(tmp_path)
+    assert not result.ok
+    assert any("scraper" in f for f in result.findings)
+    assert not any("substrateos" in f for f in result.findings)
+    assert result.scanned == 1
 
 
 def test_unvetted_mcp_server_is_flagged(tmp_path: Path):

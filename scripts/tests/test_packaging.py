@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.metadata
+import re
 from pathlib import Path
 
 import pytest
@@ -61,3 +62,32 @@ def test_bundled_copies_match_source():
         assert bundled.read_bytes() == source.read_bytes(), (
             f"{name} drifted from substrate/{name}; run `python scripts/sync_spec_data.py`"
         )
+
+
+def test_no_onedrive_paths_in_shipped_sources():
+    """Guard against the pre-move layout leaking back (the OneDrive -> D: migration).
+
+    Live code and the canonical spec must never hardcode a `...\\OneDrive\\...` path;
+    engines resolve via PATH and the spec via find_repo_root/package-data, so any
+    OneDrive path literal is a stale assumption that breaks on a moved checkout. We
+    match `OneDrive` followed by a path separator so prose that merely mentions the
+    migration (like a comment) does not trip the guard.
+    """
+    try:
+        root = find_repo_root()
+    except FileNotFoundError:  # pragma: no cover - only outside a checkout
+        pytest.skip("sources only present in a repo checkout")
+    code_root = Path(labctl.__file__).resolve().parent  # scripts/labctl
+    path_literal = re.compile(r"onedrive[\\/]", re.IGNORECASE)
+    offenders: list[str] = []
+    scopes = [
+        (code_root, "*.py"),
+        (root / "substrate", "*.md"),
+    ]
+    for base, pattern in scopes:
+        for path in base.rglob(pattern):
+            if "__pycache__" in path.parts:
+                continue
+            if path_literal.search(path.read_text(encoding="utf-8", errors="ignore")):
+                offenders.append(str(path.relative_to(root)))
+    assert not offenders, f"OneDrive path literal found in shipped sources: {offenders}"

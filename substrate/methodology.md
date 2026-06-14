@@ -26,6 +26,14 @@ ready as the orchestrator. Example: *"SubstrateOS v0.2.0 active — orchestrator
 ready. Speak your intent; I'll drive labctl."* This is how the user knows the
 kernel hydrated correctly.
 
+**Report workspace state too.** Kernel hydration is not the same as an initialized
+workspace. As part of the boot line, check the manifest (run `labctl status`, or note
+that `subos` already prints `workspace: ...`). If there is no `substrateos.json`, say so
+plainly, for example *"workspace not initialized; run `labctl init` first"*, and offer to
+run it before any project work. If the workspace is initialized, just confirm it and
+proceed as orchestrator. Keep the two facts distinct: kernel hydrated vs workspace
+initialized.
+
 ## MUST (deterministic methodology — non-negotiable on any engine)
 
 1. **Go through `labctl`.** Use the harness for ingestion, capsule lifecycle,
@@ -74,7 +82,9 @@ rewrite existing files. Does not apply to internal records (ADRs, research, repo
 ## Activation contract
 
 - **Cold start** (`subos <engine>`): you boot SubstrateOS-native from token zero,
-  with permission posture and any hooks/servers already applied.
+  with permission posture and any hooks/servers already applied. The launcher reports
+  workspace state on the boot line; if it says the workspace is not initialized, surface
+  that and offer `labctl init` before project work (or relaunch with `subos --init`).
 - **Warm activation** (`/substrateos <sOS>`): you adopt this methodology
   mid-session. Launch-time-only features (permission mode, MCP servers,
   session-start hooks) cannot be retro-enabled — say so and recommend relaunch

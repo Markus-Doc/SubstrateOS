@@ -39,6 +39,51 @@ class _FakeProc:
         self.stderr = ""
 
 
+def test_git_check_exercises_git_and_passes(repo: Path):
+    # repo fixture is a real `git init` work tree, so the live check passes.
+    result = doctor._check_git(repo)
+    assert result.ok
+    assert "git ok" in result.detail
+
+
+def test_git_check_flags_dubious_ownership(repo: Path, monkeypatch: pytest.MonkeyPatch):
+    # Simulate the post-move broken state: git refuses with dubious ownership.
+    fake = _FakeProc(128)
+    fake.stderr = (
+        f"fatal: detected dubious ownership in repository at '{repo}'"
+    )
+    monkeypatch.setattr(doctor, "_run_git", lambda *_a, **_kw: fake)
+    result = doctor._check_git(repo)
+    assert not result.ok
+    assert result.severity == "error"
+    assert "safe.directory" in result.detail
+    assert "ownership" in result.detail.lower()
+    # the whole report must now carry an error
+    monkeypatch.setattr(doctor, "_run_git", lambda *_a, **_kw: fake)
+    assert has_errors(run_checks(repo))
+
+
+def test_git_check_surfaces_other_failures(repo: Path, monkeypatch: pytest.MonkeyPatch):
+    fake = _FakeProc(128)
+    fake.stderr = "fatal: not a git repository"
+    monkeypatch.setattr(doctor, "_run_git", lambda *_a, **_kw: fake)
+    result = doctor._check_git(repo)
+    assert not result.ok
+    assert "not a git repository" in result.detail
+
+
+def test_git_check_missing_cli_skips_invocation(repo: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(doctor.shutil, "which", lambda name: None)
+
+    def explode(*_a, **_kw):
+        raise AssertionError("git must not be invoked when the CLI is absent")
+
+    monkeypatch.setattr(doctor, "_run_git", explode)
+    result = doctor._check_git(repo)
+    assert not result.ok
+    assert "git not on PATH" in result.detail
+
+
 def test_tool_checks_are_warning_severity(repo: Path, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(doctor.shutil, "which", lambda name: None)
     monkeypatch.delenv("FIRECRAWL_API_KEY", raising=False)

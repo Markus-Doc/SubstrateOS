@@ -43,16 +43,50 @@ def _check_venv() -> CheckResult:
     )
 
 
+def _run_git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run git against ``root`` and capture output (single monkeypatchable seam)."""
+    return subprocess.run(
+        ["git", "-C", str(root), *args],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+
+
 def _check_git(root: Path) -> CheckResult:
+    """Exercise git, do not just sniff for its files.
+
+    Presence (a `.git` dir plus the CLI on PATH) is necessary but not sufficient:
+    after the OneDrive -> D: move the repos came out owned by BUILTIN\\Administrators,
+    so every real git op fails with "detected dubious ownership" while the old
+    presence-only check still reported ok. We run a cheap real command and classify
+    the failure so doctor tells the truth (ADR-028).
+    """
     has_git_dir = (root / ".git").exists()
     has_git_cli = shutil.which("git") is not None
-    ok = has_git_dir and has_git_cli
-    detail = []
+    missing = []
     if not has_git_dir:
-        detail.append("no .git directory")
+        missing.append("no .git directory")
     if not has_git_cli:
-        detail.append("git not on PATH")
-    return CheckResult("git", ok, "error", "; ".join(detail) or "repo and CLI present")
+        missing.append("git not on PATH")
+    if missing:
+        return CheckResult("git", False, "error", "; ".join(missing))
+
+    proc = _run_git(root, "rev-parse", "--is-inside-work-tree")
+    if proc.returncode == 0:
+        return CheckResult("git", True, "error", "repo and CLI present (git ok)")
+
+    stderr = (proc.stderr or "").strip()
+    if "dubious ownership" in stderr.lower():
+        remediation = (
+            f"dubious ownership of {root}; fix on-disk ownership "
+            "(takeown/icacls so the dir is owned by you, not BUILTIN\\Administrators), "
+            f'or trust it with `git config --global --add safe.directory "{root}"`'
+        )
+        return CheckResult("git", False, "error", remediation)
+    detail = stderr or f"git command failed (exit {proc.returncode})"
+    return CheckResult("git", False, "error", detail)
 
 
 def _check_dirs(root: Path) -> CheckResult:

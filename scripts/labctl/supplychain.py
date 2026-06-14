@@ -17,6 +17,8 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from labctl.compile_spec import is_managed
+
 SKILLS_DIRS = (".claude/skills", ".agents/skills", ".gemini/skills", ".cursor/skills")
 ALLOWLIST_REL = "substrate/trusted-tools.json"
 MCP_CONFIG_REL = ".mcp.json"
@@ -44,11 +46,22 @@ def _load_allowlist(root: Path) -> set[str]:
 
 
 def _discover_skills(root: Path) -> list[Path]:
+    """Find third-party skills only.
+
+    Skills that SubstrateOS compiles for itself (the substrateos kernel skill,
+    written by `subos`) carry the generated-by marker and are first-party: they are
+    the OS, not an introduced third-party tool, so they are not supply-chain risk.
+    Excluding them keeps the naked Base green even though booting via `subos`
+    materialises `.claude/skills/substrateos/SKILL.md` (ADR-030).
+    """
     found: list[Path] = []
     for rel in SKILLS_DIRS:
         base = root / rel
         if base.is_dir():
-            found.extend(sorted(base.rglob("SKILL.md")))
+            found.extend(
+                skill for skill in sorted(base.rglob("SKILL.md"))
+                if not is_managed(skill)
+            )
     return found
 
 
