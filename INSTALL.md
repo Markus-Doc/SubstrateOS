@@ -1,15 +1,15 @@
 # Installing SubstrateOS
 
 This guide takes you from nothing to running `subos claude` from any folder. It
-is written for first-time users — no prior experience needed. Pick your operating
+is written for first-time users, no prior experience needed. Pick your operating
 system below.
 
-**What you get:** two commands on your PATH —
+**What you get:** two commands on your PATH.
 
-- **`subos`** — launches an AI engine (Claude, Codex, Gemini, Cursor) as a
+- **`subos`** launches an AI engine (Claude, Codex, Gemini, Cursor) as a
   SubstrateOS "kernel".
-- **`labctl`** — the harness that runs the build discipline (status, ingest, the
-  release gate, …).
+- **`labctl`** is the harness that runs the build discipline (status, ingest, the
+  release gate, and more).
 
 SubstrateOS does **not** include an AI model or any paid API. It launches whatever
 engine you already have installed (e.g. the `claude` command), so there is no
@@ -59,8 +59,8 @@ The installer lives at the top of the repository (`install.ps1` for Windows,
    .\install.ps1
    ```
 
-3. **Open a NEW PowerShell window.** This is important — your PATH only updates in
-   fresh terminals. Then confirm the global command works from **any** folder:
+3. **Open a NEW PowerShell window.** This matters, because your PATH only updates
+   in fresh terminals. Then confirm the global command works from **any** folder:
 
    ```powershell
    subos --version          # works from any directory
@@ -127,7 +127,7 @@ subos claude --dry-run
 ```
 
 This previews what SubstrateOS will do: it compiles the canonical methodology into
-the engine's instruction file and prints the launch plan — without starting the
+the engine's instruction file and prints the launch plan, without starting the
 engine. When you are ready to launch for real:
 
 ```sh
@@ -154,8 +154,8 @@ default on your machine, pass the opt-in flag to the installer:
 ./install.sh --full-auto-default        # Linux / macOS
 ```
 
-This sets `SUBSTRATEOS_FULL_AUTO=1` in your **personal** user environment only —
-it never changes the shared project. Reverse it any time by removing that variable
+This sets `SUBSTRATEOS_FULL_AUTO=1` in your **personal** user environment only. It
+never changes the shared project. Reverse it any time by removing that variable
 (Windows: `[Environment]::SetEnvironmentVariable("SUBSTRATEOS_FULL_AUTO",$null,"User")`;
 Linux/macOS: delete the line from `~/.config/substrateos/overlay.env`). You can
 also force the safe posture for a single run with `subos claude --platform-default`.
@@ -164,7 +164,7 @@ also force the safe posture for a single run with `subos claude --platform-defau
 
 ## Run in a container (advanced)
 
-SubstrateOS ships a root `Dockerfile` that builds a "golden image" — the same unit
+SubstrateOS ships a root `Dockerfile` that builds a "golden image": the same unit
 can run locally and be deployed to a container platform (e.g. EKS). No secrets are
 baked in; engine tokens are passed by environment-variable name at run time.
 
@@ -177,7 +177,7 @@ docker run --rm -it substrateos:latest labctl --help
 
 ## Upgrading and uninstalling
 
-- **Upgrade:** pull the latest code and re-run the installer — it is idempotent and
+- **Upgrade:** pull the latest code and re-run the installer. It is idempotent and
   upgrades in place.
 - **Uninstall:** `pipx uninstall labctl` (or delete the managed virtualenv under
   `~/.local/share/substrateos` / `%LOCALAPPDATA%\SubstrateOS` if the venv fallback
@@ -196,5 +196,5 @@ docker run --rm -it substrateos:latest labctl --help
 | `subos: canonical spec not found` | Re-run the installer; the spec ships inside the package, so this means the install is incomplete. |
 | Engine won't launch (`engine binary not on PATH`) | Install the engine's CLI (e.g. `claude`) and make sure it is on PATH; confirm with `labctl doctor`. |
 
-Still stuck? Run `labctl doctor` and `labctl status` — between them they describe
+Still stuck? Run `labctl doctor` and `labctl status`. Between them they describe
 your environment and the next recommended action.
