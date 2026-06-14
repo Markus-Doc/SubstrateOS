@@ -12,10 +12,15 @@ launching — used by tests and for inspection.
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
+
+# importlib.resources is stdlib since 3.9; this project requires Python >= 3.11,
+# so the python37-compatibility rule is a false positive here.
+from importlib import resources  # nosemgrep
 from pathlib import Path
 
 from labctl import __version__
@@ -33,12 +38,61 @@ class LaunchPlan:
     posture: str
 
 
-def _default_spec_path() -> Path:
+SPEC_REL = ("substrate", "methodology.md")
+PACKAGED_SPEC = "methodology.md"
+
+
+def _packaged_spec_path() -> Path | None:
+    """Path to the spec bundled as package data, or None if unavailable (ADR-026).
+
+    Installed/container invocations resolve the spec from the package itself so
+    ``subos`` works from any directory. Returns a real filesystem path for the
+    normal (unzipped) pip/pipx/docker install.
+    """
     try:
-        root = find_repo_root()
+        resource = resources.files("labctl.data").joinpath(PACKAGED_SPEC)
+    except (ModuleNotFoundError, AttributeError):
+        return None
+    try:
+        if resource.is_file():
+            return Path(str(resource))
+    except (OSError, AttributeError):
+        return None
+    return None
+
+
+def _default_spec_path() -> Path:
+    """Resolve the canonical spec: repo source first, packaged copy as fallback.
+
+    Inside a checkout the editable ``substrate/methodology.md`` wins so dev edits
+    take effect immediately; outside a repo (installed globally or in a container)
+    the bundled package-data copy is used (ADR-026).
+    """
+    try:
+        candidate = find_repo_root().joinpath(*SPEC_REL)
+        if candidate.is_file():
+            return candidate
     except FileNotFoundError:
-        root = Path.cwd()
-    return root / "substrate" / "methodology.md"
+        pass
+    packaged = _packaged_spec_path()
+    if packaged is not None:
+        return packaged
+    return Path.cwd().joinpath(*SPEC_REL)
+
+
+def _full_auto_default() -> bool:
+    """Opt-in default posture from the environment (12-factor, ADR-026 §6).
+
+    ``SUBSTRATEOS_FULL_AUTO`` truthy makes ``full-auto`` the default posture. The
+    public Base ships safe (unset); an installer ``--full-auto-default`` or an
+    Overlay sets this in user-scope config, never in the Base.
+    """
+    return os.environ.get("SUBSTRATEOS_FULL_AUTO", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
 
 
 def build_plan(
@@ -63,7 +117,12 @@ def build_plan(
 
 def run(args: argparse.Namespace) -> int:
     target = Path(args.target).expanduser().resolve()
-    posture = "full-auto" if args.full_auto else "platform-default"
+    if args.platform_default:
+        posture = "platform-default"
+    elif args.full_auto or _full_auto_default():
+        posture = "full-auto"
+    else:
+        posture = "platform-default"
     try:
         plan = build_plan(args.engine, target_dir=target, posture=posture)
     except KeyError as exc:
@@ -125,6 +184,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--full-auto", action="store_true", help="use the engine's full-auto posture"
+    )
+    parser.add_argument(
+        "--platform-default",
+        action="store_true",
+        help="force the safe platform-default posture (overrides SUBSTRATEOS_FULL_AUTO)",
     )
     parser.add_argument("--spec", default=None, help="override canonical spec path")
     parser.add_argument(

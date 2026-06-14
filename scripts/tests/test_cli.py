@@ -28,3 +28,11 @@ def test_doctor_fails_on_broken_repo(in_repo: Path):
     # no init: required dirs missing -> error severity -> exit 1
     result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 1
+
+
+def test_version_flag():
+    from labctl import __version__
+
+    result = runner.invoke(app, ["--version"])
+    assert result.exit_code == 0
+    assert __version__ in result.output

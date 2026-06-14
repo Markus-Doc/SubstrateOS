@@ -1,7 +1,12 @@
 # ADR-026: Packaging, distribution, and cross-platform installers
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-06-14
+- Implemented: 2026-06-14 — spec bundled as `labctl/data` package data with an
+  `importlib.resources` fallback in `subos._default_spec_path()`; `pyproject`
+  version single-sourced from `labctl.__version__`; `install.ps1` + `install.sh`;
+  root `Dockerfile` + `.dockerignore`; `labctl doctor` install-health checks;
+  `INSTALL.md`. Live `docker build` and a real Linux/macOS run remain owner-gated.
 - Supersedes: none
 - Related: ADR-002 (no heavyweight frameworks), ADR-019 (Base/Overlay, engine-agnostic
   front-end), ADR-025 (in-container capsule execution)

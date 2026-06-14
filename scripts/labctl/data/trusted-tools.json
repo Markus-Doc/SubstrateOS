@@ -1,0 +1,4 @@
+{
+  "_comment": "Supply-chain allowlist (M-F / ADR-024). Add a skill or MCP server name here ONLY after auditing its licence, maintainers, scripts, network calls, and permissions. The Base ships this blank: no third-party tools are trusted by default, so the supply-chain gate stage flags anything unvetted. Overlays may extend this in their own repo.",
+  "trusted": []
+}

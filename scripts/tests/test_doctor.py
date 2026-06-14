@@ -44,15 +44,28 @@ def test_tool_checks_are_warning_severity(repo: Path, monkeypatch: pytest.Monkey
     monkeypatch.delenv("FIRECRAWL_API_KEY", raising=False)
     results = run_checks(repo)
     by_name = {r.name: r for r in results}
-    for name in ("gitleaks", "trivy", "semgrep", "node", "firecrawl-key"):
+    for name in ("gitleaks", "trivy", "semgrep", "node", "firecrawl-key", "subos-on-path", "engines"):
         assert not by_name[name].ok
         assert by_name[name].severity == "warning"
     # missing tools must never make doctor exit non-zero on their own
     assert not any(
         r.severity == "error" and not r.ok
         for r in results
-        if r.name in ("gitleaks", "trivy", "semgrep", "node", "docling", "firecrawl-key")
+        if r.name
+        in (
+            "gitleaks", "trivy", "semgrep", "node", "docling", "firecrawl-key",
+            "subos-on-path", "spec-resolvable", "engines",
+        )
     )
+
+
+def test_install_health_checks_present(repo: Path):
+    results = run_checks(repo)
+    by_name = {r.name: r for r in results}
+    assert {"subos-on-path", "spec-resolvable", "engines"} <= set(by_name)
+    # the spec ships as package data, so it resolves regardless of cwd
+    assert by_name["spec-resolvable"].ok
+    assert by_name["spec-resolvable"].severity == "warning"
 
 
 def test_cli_tool_check_reports_path(monkeypatch: pytest.MonkeyPatch):

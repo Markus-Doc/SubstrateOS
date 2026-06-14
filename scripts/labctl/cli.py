@@ -11,6 +11,7 @@ from pathlib import Path
 
 import typer
 
+from labctl import __version__
 from labctl import capsule as capsule_mod
 from labctl import doctor as doctor_mod
 from labctl import gate as gate_mod
@@ -43,6 +44,25 @@ workflow_app = typer.Typer(no_args_is_help=True, add_completion=False)
 app.add_typer(
     workflow_app, name="workflow", help="Dynamic Workflows: multi-agent orchestration."
 )
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"SubstrateOS (labctl) {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def _app_main(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        help="Show the SubstrateOS version and exit.",
+        callback=_version_callback,
+        is_eager=True,
+    ),
+) -> None:
+    """SubstrateOS Lab Controller — drive the harness; never bypass the release gate."""
 
 
 def _root() -> Path:

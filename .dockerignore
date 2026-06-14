@@ -1,0 +1,43 @@
+# Keep the build context small and secret-free (ADR-026).
+.git
+.gitignore
+.venv
+venv
+
+# Python build/cache cruft
+**/__pycache__
+**/*.py[cod]
+**/*.egg-info
+**/.pytest_cache
+**/.ruff_cache
+dist
+build
+
+# Secrets / local config — never send to the build context
+.env
+.env.*
+*.key
+*.pem
+secrets/
+
+# Local-only runtime state and outputs
+artifacts/
+**/*.sqlite
+
+# Docs and planning are not needed in the runtime image
+docs/
+templates/
+evals/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Installers and the image recipe itself
+install.ps1
+install.sh
+Dockerfile
+.dockerignore
