@@ -48,11 +48,18 @@ labctl review approve <report-path>          # promote the record
 `research review` also works with **no candidate** — a self-audit of the
 watch-list against the current ADRs — useful between full RESYNTH sweeps.
 
-## Opt-in headless (`--auto`)
+## Opt-in headless (`--headless`)
 
-`sync --auto` and `review --auto` perform the thinking steps with headless claude,
-metered by the ADR-016 token circuit breaker. They print a credit-spend warning.
-Use only for fire-and-forget sweeps.
+`sync --headless` and `review --headless` perform the thinking steps with headless
+claude, metered by the ADR-016 token circuit breaker. They print a credit-spend
+warning. Use only for fire-and-forget sweeps. (`--auto` is retained as an alias.)
+
+A personal/Overlay preference can flip the default: when
+`SUBSTRATEOS_RESEARCH_HEADLESS` is truthy (`1`/`true`/`yes`/`on`) the commands
+default to headless without the flag. The public Base ships it **unset** — default
+off, i.e. interactive. The per-command flag still wins (you can always pass
+`--headless` explicitly), and the credit-spend warning prints whenever headless is
+active however it was selected.
 
 ## The watch-list
 
@@ -70,4 +77,5 @@ The Base ships the pipeline as a manual control-plane command. To run it on a
 cadence, wire it into the lab-box duty cycle in an **Overlay** (never the public
 Base): a `@reboot` / RTC-self-wake job (ADR-018) that runs `labctl research review`
 (report-only) and reports the pending report back over the Telegram trigger. Keep
-`--auto` off unless you accept the Agent-SDK spend.
+`--headless` (and `SUBSTRATEOS_RESEARCH_HEADLESS`) off unless you accept the
+Agent-SDK spend.
