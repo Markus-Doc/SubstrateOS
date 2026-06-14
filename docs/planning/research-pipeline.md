@@ -1,4 +1,4 @@
-# `labctl research` — best-practices research/review pipeline (ADR-021)
+# `labctl research`: best-practices research/review pipeline (ADR-021)
 
 Keeps SubstrateOS current with AI best practices. It re-synthesises current
 research with **RESYNTH** and diffs the result against the OS design, surfacing a
@@ -9,7 +9,7 @@ accident (ADR-019's promise of a Base that is reviewed regularly).
 ## How it runs (read this first)
 
 By default the pipeline is **operated by the interactive session you launched with
-`subos <engine>`** — `labctl research` gives you deterministic, file-backed
+`subos <engine>`**. `labctl research` gives you deterministic, file-backed
 commands and *you/the session* do the thinking. **No headless model call, no
 Agent-SDK credit spend.** Every command that can spend credits requires the
 explicit, clearly-labelled `--auto` flag.
@@ -21,7 +21,7 @@ explicit, clearly-labelled `--auto` flag.
 ## Prerequisite
 
 Install **RESYNTH** (separate optional tool, zero runtime AI dependency):
-`labctl doctor` reports whether `resynth` is on PATH (a `[WARN]` if absent — the
+`labctl doctor` reports whether `resynth` is on PATH (a `[WARN]` if absent: the
 pipeline simply can't run a live sweep until it's installed). See the RESYNTH repo
 for its installer.
 
@@ -45,8 +45,8 @@ labctl review list                          # shows the report as PENDING
 labctl review approve <report-path>          # promote the record
 ```
 
-`research review` also works with **no candidate** — a self-audit of the
-watch-list against the current ADRs — useful between full RESYNTH sweeps.
+`research review` also works with **no candidate** (a self-audit of the
+watch-list against the current ADRs), handy between full RESYNTH sweeps.
 
 ## Opt-in headless (`--headless`)
 
@@ -56,7 +56,7 @@ warning. Use only for fire-and-forget sweeps. (`--auto` is retained as an alias.
 
 A personal/Overlay preference can flip the default: when
 `SUBSTRATEOS_RESEARCH_HEADLESS` is truthy (`1`/`true`/`yes`/`on`) the commands
-default to headless without the flag. The public Base ships it **unset** — default
+default to headless without the flag. The public Base ships it **unset**, default
 off, i.e. interactive. The per-command flag still wins (you can always pass
 `--headless` explicitly), and the credit-spend warning prints whenever headless is
 active however it was selected.
@@ -64,7 +64,7 @@ active however it was selected.
 ## The watch-list
 
 `substrate/research-watch.json` (Base default, **Overlay-tunable**) names the
-tools/standards/formats to watch — instruction compile formats (SKILL.md/AGENTS.md),
+tools/standards/formats to watch, instruction compile formats (SKILL.md/AGENTS.md),
 supported engines, in-container execution (bespoke vs OpenHands), the
 ultracode/Dynamic-Workflows surface (ADR-027), the default model, retrieval, and the
 governing research itself. Each item records its current choice and the ADRs it
