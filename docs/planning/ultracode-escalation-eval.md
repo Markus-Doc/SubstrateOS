@@ -2,8 +2,9 @@
 
 Date: 2026-06-14
 Author: Opus 4.8 session (Windows host; SubstrateOS read-only evaluation)
-Status: Analysis + decision-leaning only — no code changes. Input for a future
-ADR once the in-flight install/distribution build (ADR-026) lands.
+Status: Promoted to **ADR-027** (2026-06-14) once the install/distribution build
+(ADR-026) landed at `4190dd8`. This doc remains the working analysis; ADR-027 is
+the decision record.
 
 > ⚠️ Multi-session note: at the time of writing another build session held
 > uncommitted work in `scripts/labctl/{cli,doctor,subos}.py`, `pyproject.toml`,
