@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from labctl import __version__
 from labctl.engines import EngineAdapter
 
 MANAGED_MARKER = (
@@ -18,10 +19,15 @@ MANAGED_MARKER = (
     "edit substrate/methodology.md and recompile -->"
 )
 
+# Machine- and model-readable stamp of the operating version. The boot-confirmation
+# directive in methodology.md tells the engine to read and confirm this on start.
+VERSION_MARKER = "<!-- SubstrateOS version: {version} -->"
+
 
 def render(spec_text: str, adapter: EngineAdapter) -> str:
     """Render the compiled instruction-file content for one engine."""
-    header = f"{MANAGED_MARKER}\n<!-- engine: {adapter.name} -->\n\n"
+    version_line = VERSION_MARKER.format(version=__version__)
+    header = f"{MANAGED_MARKER}\n{version_line}\n<!-- engine: {adapter.name} -->\n\n"
     return header + spec_text
 
 
