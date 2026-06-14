@@ -19,6 +19,7 @@ from labctl import audit as audit_mod
 from labctl import conformance as conformance_mod
 from labctl import lab as lab_mod
 from labctl import orchestrate as orchestrate_mod
+from labctl import research as research_mod
 from labctl import review as review_mod
 from labctl import trigger as trigger_mod
 from labctl import usage as usage_mod
@@ -43,6 +44,10 @@ app.add_typer(
 workflow_app = typer.Typer(no_args_is_help=True, add_completion=False)
 app.add_typer(
     workflow_app, name="workflow", help="Dynamic Workflows: multi-agent orchestration."
+)
+research_app = typer.Typer(no_args_is_help=True, add_completion=False)
+app.add_typer(
+    research_app, name="research", help="Best-practices research/review pipeline (ADR-021)."
 )
 
 
@@ -532,6 +537,113 @@ def audit(
     typer.echo(f"report: {report_path}")
     if not result.accepted:
         raise typer.Exit(code=1)
+
+
+@research_app.command("status")
+def research_status(
+    show_watch: bool = typer.Option(False, "--show-watch", help="List the research watch-list."),
+) -> None:
+    """Show the watch-list, sweeps in progress, and pending review reports."""
+    root = _root()
+    watch = research_mod.load_watch_list(root)
+    items = watch.get("items", [])
+    typer.echo(f"watch-list: {len(items)} item(s)  (source: {research_mod.watch_list_path(root)})")
+    if show_watch:
+        for item in items:
+            typer.echo(f"  - {item['name']}: {item['current_choice']}  [{', '.join(item['adr_refs'])}]")
+    research_root = root / research_mod.RESEARCH_DIR_REL
+    sweeps = (
+        sorted(p.name for p in research_root.glob("*") if (p / "research.json").is_file())
+        if research_root.is_dir()
+        else []
+    )
+    typer.echo(f"sweeps: {', '.join(sweeps) if sweeps else '(none)'}")
+    pending = [
+        d
+        for d in review_mod.list_derived(root)
+        if d.namespace == research_mod.REVIEW_NAMESPACE and not d.promoted
+    ]
+    typer.echo(f"pending review reports: {len(pending)}")
+    for doc in pending:
+        typer.echo(f"  [PENDING] {doc.path.relative_to(root)}")
+
+
+@research_app.command("brief")
+def research_brief(
+    topic: str = typer.Option(..., "--topic", help="What to research, in one sentence."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Show the plan; do not call resynth."),
+) -> None:
+    """Scaffold a RESYNTH project and generate per-platform research prompts."""
+    root = _root()
+    if dry_run:
+        typer.echo(f"would scaffold RESYNTH project: {research_mod.research_dir(root, topic)}")
+        typer.echo("would run: resynth init <slug>; resynth brief <slug> --topic ...")
+        return
+    try:
+        result = research_mod.brief(root, topic)
+    except RuntimeError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    for action in result.actions:
+        typer.echo(action)
+    typer.echo(f"project: {result.project_dir}")
+    typer.echo("next:")
+    for step in result.next_steps:
+        typer.echo(f"  - {step}")
+
+
+@research_app.command("sync")
+def research_sync(
+    topic: str = typer.Argument(..., help="The research topic (same wording as brief)."),
+    reports: Path = typer.Option(None, "--reports", help="Folder of saved research report files to intake."),
+    auto: bool = typer.Option(False, "--auto", help="Drive thinking stages HEADLESSLY (spends Agent-SDK credits)."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Show the plan; do not call resynth."),
+) -> None:
+    """Drive RESYNTH to produce the candidate master (interactive by default)."""
+    root = _root()
+    if dry_run:
+        typer.echo(f"would drive RESYNTH for '{topic}' (slug {research_mod.slugify(topic)})")
+        typer.echo(f"  reports: {reports or '(none)'}   auto: {auto}")
+        typer.echo("  stages: intake -> extract -> reconcile -> synthesise -> audit -> seal -> export")
+        if auto:
+            typer.echo("  --auto: each thinking stage runs headless claude (DRAWS AGENT-SDK CREDITS)")
+        return
+    if auto:
+        typer.echo("WARNING: --auto runs headless claude per thinking stage and DRAWS AGENT-SDK CREDITS.", err=True)
+    try:
+        result = research_mod.sync(root, topic, reports_dir=reports, auto=auto)
+    except RuntimeError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"completed: {', '.join(result.completed) if result.completed else '(none)'}")
+    if result.operator_action is not None:
+        stage = result.operator_action
+        typer.echo(
+            f"\nOPERATOR ACTION - stage '{stage.name}' (do this in your subos session, then re-run sync):"
+        )
+        typer.echo(stage.prompt.format(slug=result.slug))
+    else:
+        typer.echo(f'candidate sealed. Next: labctl research review "{topic}" --candidate <MASTER.json>')
+
+
+@research_app.command("review")
+def research_review(
+    topic: str = typer.Argument(..., help="The research topic."),
+    candidate: Path = typer.Option(None, "--candidate", help="Path to the RESYNTH MASTER.json candidate."),
+    auto: bool = typer.Option(False, "--auto", help="Generate the report HEADLESSLY (spends Agent-SDK credits)."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Show the handoff packet + target path; write nothing."),
+) -> None:
+    """Diff the candidate against the design; write an unpromoted review report."""
+    root = _root()
+    if dry_run:
+        typer.echo(research_mod.build_review_packet(root, topic, candidate).render())
+        typer.echo(f"would write report under: {research_mod.review_report_dir(root)}")
+        return
+    if auto:
+        typer.echo("WARNING: --auto runs headless claude and DRAWS AGENT-SDK CREDITS.", err=True)
+    result = research_mod.review(root, topic, candidate=candidate, auto=auto)
+    typer.echo(f"review report (unpromoted): {result.report_path.relative_to(root)}")
+    typer.echo("promote after authoring any ADRs:  labctl review approve <path>")
 
 
 @app.command()

@@ -128,6 +128,10 @@ files (`CLAUDE.md`, `AGENTS.md`, …) — write once, run on any engine.
   over the repo's memory namespace, producing a findings report (ADR-025).
 - `labctl build --container` — run a capsule build in Docker; the circuit breaker
   kills the whole container; OAuth token injected by name only (ADR-025).
+- `labctl research` — keep the OS current with AI best practices (ADR-021):
+  `brief`/`sync` drive RESYNTH to re-synthesise a candidate, `review` diffs it against
+  the ADRs/tooling/watch-list into a human-promoted report. Operated by your
+  interactive `subos` session — **no headless spend** unless you pass `--auto`.
 - `labctl conformance` — the cross-engine MUST contract.
 
 Private customisation layers on via an **Overlay** (`SUBSTRATEOS_OVERLAY`,

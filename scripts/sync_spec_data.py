@@ -16,7 +16,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-FILES = ("methodology.md", "trusted-tools.json")
+FILES = ("methodology.md", "trusted-tools.json", "research-watch.json")
 
 
 def sync(repo_root: Path) -> list[Path]:

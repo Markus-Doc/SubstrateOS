@@ -214,6 +214,7 @@ def run_checks(root: Path) -> list[CheckResult]:
         _check_cli_tool("trivy", "vuln-scan stage skipped"),
         _check_semgrep(),
         _check_cli_tool("node", "evals stage skipped"),
+        _check_cli_tool("resynth", "research pipeline unavailable"),
         _check_docling(),
         _check_firecrawl_key(root),
         _check_lab_config(root),
