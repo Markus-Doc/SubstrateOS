@@ -177,6 +177,49 @@ def test_env_unset_is_platform_default(tmp_path: Path, capsys, monkeypatch: pyte
     assert _posture_line(capsys.readouterr().out).endswith("platform-default")
 
 
+# --- boot reflects workspace init state (ADR-029) ---
+
+def test_dry_run_reports_uninitialized_workspace(tmp_path: Path, capsys):
+    spec = _write_spec(tmp_path)
+    target = tmp_path / "proj"
+    rc = main(["claude", "--target", str(target), "--spec", str(spec), "--dry-run"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    ws = next(line for line in out.splitlines() if line.startswith("workspace"))
+    assert "NOT initialized" in ws
+    assert "labctl init" in ws
+
+
+def test_dry_run_reports_initialized_workspace(tmp_path: Path, capsys):
+    spec = _write_spec(tmp_path)
+    target = tmp_path / "proj"
+    target.mkdir()
+    (target / "substrateos.json").write_text(
+        '{"project": "Demo"}', encoding="utf-8"
+    )
+    rc = main(["claude", "--target", str(target), "--spec", str(spec), "--dry-run"])
+    assert rc == 0
+    out = capsys.readouterr().out
+    ws = next(line for line in out.splitlines() if line.startswith("workspace"))
+    assert "initialized" in ws
+    assert "Demo" in ws
+    assert "NOT initialized" not in ws
+
+
+def test_init_flag_initializes_before_launch(tmp_path: Path, capsys):
+    spec = _write_spec(tmp_path)
+    target = tmp_path / "proj"
+    rc = main(
+        ["claude", "--target", str(target), "--spec", str(spec), "--init", "--dry-run"]
+    )
+    assert rc == 0
+    assert (target / "substrateos.json").is_file()
+    out = capsys.readouterr().out
+    assert "init:" in out  # init actions were reported
+    ws = next(line for line in out.splitlines() if line.startswith("workspace"))
+    assert "initialized" in ws and "NOT initialized" not in ws
+
+
 # --- launch resolution (Windows npm shim: claude.CMD, not claude.exe) ---
 
 def test_launch_uses_resolved_binary_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):

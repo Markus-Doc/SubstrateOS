@@ -25,7 +25,7 @@ from pathlib import Path
 
 from labctl import __version__
 from labctl.compile_spec import compile_skill, compile_to, compile_warm_command
-from labctl.config import find_repo_root
+from labctl.config import Manifest, find_repo_root, init_project, load_manifest
 from labctl.engines import EngineAdapter, get_adapter
 from labctl.handshake import build_handshake, render_handshake
 
@@ -80,6 +80,25 @@ def _default_spec_path() -> Path:
     return Path.cwd().joinpath(*SPEC_REL)
 
 
+def _workspace_state(target: Path) -> tuple[bool, Manifest | None]:
+    """Is ``target`` an initialized SubstrateOS workspace (has a manifest)?
+
+    Kernel hydration (the methodology compiled into the engine instruction file) is
+    separate from workspace init (the ``substrateos.json`` manifest labctl reads). A
+    dir can have the kernel hydrated yet be uninitialized, which is exactly the gap
+    the boot banner has to surface (ADR-029).
+    """
+    manifest = load_manifest(target)
+    return manifest is not None, manifest
+
+
+def _workspace_line(initialized: bool, manifest: Manifest | None) -> str:
+    """One-line, dash-free workspace summary for the boot banner / dry-run."""
+    if initialized and manifest is not None:
+        return f"initialized (project {manifest.project})"
+    return "NOT initialized (no substrateos.json; run `labctl init` or pass --init)"
+
+
 def _full_auto_default() -> bool:
     """Opt-in default posture from the environment (12-factor, ADR-026 §6).
 
@@ -129,6 +148,14 @@ def run(args: argparse.Namespace) -> int:
         print(f"subos: {exc}", file=sys.stderr)
         return 2
 
+    initialized, manifest = _workspace_state(target)
+    if not initialized and getattr(args, "init", False):
+        target.mkdir(parents=True, exist_ok=True)
+        _, actions = init_project(target)
+        for action in actions:
+            print(f"subos: init: {action}")
+        initialized, manifest = _workspace_state(target)
+
     spec_path = Path(args.spec).expanduser() if args.spec else _default_spec_path()
     if not spec_path.is_file():
         print(f"subos: canonical spec not found: {spec_path}", file=sys.stderr)
@@ -145,6 +172,7 @@ def run(args: argparse.Namespace) -> int:
         print(f"subos version : {__version__}")
         print(f"engine        : {plan.adapter.name}")
         print(f"posture       : {plan.posture}")
+        print(f"workspace     : {_workspace_line(initialized, manifest)}")
         print(f"instruction   : {written}")
         print(f"warm command  : {warm if warm else '(engine has no /substrateos slot)'}")
         print(f"skill         : {skill if skill else '(engine has no skills dir)'}")
@@ -163,9 +191,15 @@ def run(args: argparse.Namespace) -> int:
         print(f"subos: engine binary not on PATH: {plan.argv[0]}", file=sys.stderr)
         return 127
     print(
-        f"SubstrateOS v{__version__} active — launching {plan.adapter.name} "
-        f"({plan.posture}); the engine will confirm the kernel on boot."
+        f"SubstrateOS v{__version__} active (kernel hydrated) - launching "
+        f"{plan.adapter.name} ({plan.posture}); workspace: "
+        f"{_workspace_line(initialized, manifest)}"
     )
+    if not initialized:
+        print(
+            "subos: this workspace is not initialized yet. Run `labctl init` inside "
+            "the engine (or relaunch with --init) before project work."
+        )
     try:
         return subprocess.run([binary, *plan.argv[1:]], cwd=target).returncode
     except OSError as exc:
@@ -194,6 +228,11 @@ def main(argv: list[str] | None = None) -> int:
         "--platform-default",
         action="store_true",
         help="force the safe platform-default posture (overrides SUBSTRATEOS_FULL_AUTO)",
+    )
+    parser.add_argument(
+        "--init",
+        action="store_true",
+        help="run `labctl init` in the target before launching if uninitialized",
     )
     parser.add_argument("--spec", default=None, help="override canonical spec path")
     parser.add_argument(
