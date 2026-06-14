@@ -17,6 +17,7 @@ credit spend** unless you pass ``--auto`` (explicitly labelled at the call site)
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -223,6 +224,21 @@ def _run_stage_auto(prompt: str, cwd: Path, runner: StageRunner) -> tuple[int, b
     """Perform one thinking stage headlessly (Agent-SDK spend). Returns (tokens, tripped)."""
     _output, tokens, tripped = runner("operator", "research", prompt, AUTO_BUDGET)
     return tokens, tripped
+
+
+def headless_default() -> bool:
+    """Opt-in headless posture from the environment (mirrors subos._full_auto_default).
+
+    ``SUBSTRATEOS_RESEARCH_HEADLESS`` truthy makes ``--headless`` the default for
+    research thinking stages. The public Base ships safe (unset); an Overlay sets
+    it in user-scope config, never in the Base.
+    """
+    return os.environ.get("SUBSTRATEOS_RESEARCH_HEADLESS", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
 
 
 def sync(

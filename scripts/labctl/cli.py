@@ -596,7 +596,7 @@ def research_brief(
 def research_sync(
     topic: str = typer.Argument(..., help="The research topic (same wording as brief)."),
     reports: Path = typer.Option(None, "--reports", help="Folder of saved research report files to intake."),
-    auto: bool = typer.Option(False, "--auto", help="Drive thinking stages HEADLESSLY (spends Agent-SDK credits)."),
+    auto: bool = typer.Option(False, "--headless", "--auto", help="Run thinking stages HEADLESSLY (spends Agent-SDK credits)."),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show the plan; do not call resynth."),
 ) -> None:
     """Drive RESYNTH to produce the candidate master (interactive by default)."""
@@ -608,8 +608,9 @@ def research_sync(
         if auto:
             typer.echo("  --auto: each thinking stage runs headless claude (DRAWS AGENT-SDK CREDITS)")
         return
+    auto = auto or research_mod.headless_default()
     if auto:
-        typer.echo("WARNING: --auto runs headless claude per thinking stage and DRAWS AGENT-SDK CREDITS.", err=True)
+        typer.echo("WARNING: headless mode runs claude -p per thinking stage and DRAWS AGENT-SDK CREDITS.", err=True)
     try:
         result = research_mod.sync(root, topic, reports_dir=reports, auto=auto)
     except RuntimeError as exc:
@@ -630,7 +631,7 @@ def research_sync(
 def research_review(
     topic: str = typer.Argument(..., help="The research topic."),
     candidate: Path = typer.Option(None, "--candidate", help="Path to the RESYNTH MASTER.json candidate."),
-    auto: bool = typer.Option(False, "--auto", help="Generate the report HEADLESSLY (spends Agent-SDK credits)."),
+    auto: bool = typer.Option(False, "--headless", "--auto", help="Run thinking stages HEADLESSLY (spends Agent-SDK credits)."),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show the handoff packet + target path; write nothing."),
 ) -> None:
     """Diff the candidate against the design; write an unpromoted review report."""
@@ -639,8 +640,9 @@ def research_review(
         typer.echo(research_mod.build_review_packet(root, topic, candidate).render())
         typer.echo(f"would write report under: {research_mod.review_report_dir(root)}")
         return
+    auto = auto or research_mod.headless_default()
     if auto:
-        typer.echo("WARNING: --auto runs headless claude and DRAWS AGENT-SDK CREDITS.", err=True)
+        typer.echo("WARNING: headless mode runs claude -p and DRAWS AGENT-SDK CREDITS.", err=True)
     result = research_mod.review(root, topic, candidate=candidate, auto=auto)
     typer.echo(f"review report (unpromoted): {result.report_path.relative_to(root)}")
     typer.echo("promote after authoring any ADRs:  labctl review approve <path>")

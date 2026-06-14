@@ -84,6 +84,16 @@ def test_slugify():
     assert research.slugify("Current AI Best Practices!") == "current-ai-best-practices"
 
 
+def test_headless_default_reads_env(monkeypatch):
+    monkeypatch.setenv("SUBSTRATEOS_RESEARCH_HEADLESS", "1")
+    assert research.headless_default() is True
+
+
+def test_headless_default_unset_is_false(monkeypatch):
+    monkeypatch.delenv("SUBSTRATEOS_RESEARCH_HEADLESS", raising=False)
+    assert research.headless_default() is False
+
+
 # --- brief ---
 
 def test_brief_scaffolds_project(research_repo: Path):
