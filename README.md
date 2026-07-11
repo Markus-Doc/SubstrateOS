@@ -1,5 +1,9 @@
 # SubstrateOS
 
+## Ownership and third-party rights
+
+SubstrateOS is an original project by M. Walker. The repository-level MIT License covers the original code, documentation, architecture, and methodology. AI engines, dependencies, external tools, and standards retain their own rights and terms. The related `research-dashboard` repository is part of the same project family. See [NOTICE.md](NOTICE.md).
+
 A thin, local-first AI orchestration harness. Not a platform.
 
 ## Install (Start Here, No Experience Needed)
