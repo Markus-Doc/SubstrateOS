@@ -1,8 +1,6 @@
 # SubstrateOS
 
-## Ownership and third-party rights
-
-SubstrateOS is an original project by M. Walker. The repository-level MIT License covers the original code, documentation, architecture, and methodology. AI engines, dependencies, external tools, and standards retain their own rights and terms. The related `research-dashboard` repository is part of the same project family. See [NOTICE.md](NOTICE.md).
+Status: working. Built from June 2026, last updated July 2026. Last reviewed September 2026.
 
 A thin, local-first AI orchestration harness. Not a platform.
 
@@ -54,7 +52,7 @@ to create the manifest and folders (safe to re-run). Any command explains itself
 with `--help`.
 
 Power-user flags: `labctl ingest <file> --namespace <ns>` indexes into a specific
-memory namespace; `--source-link <url>` records where a file came from. Ingested
+memory namespace. `--source-link <url>` records where a file came from. Ingested
 output lands in `artifacts/ingest/`, memory in `artifacts/memory.sqlite` (both
 local-only, gitignored).
 
@@ -74,13 +72,13 @@ enforces they match).
 ## Going further, from first run to power user
 
 A natural progression once `subos`/`labctl` are installed. Each step builds on the
-last; every command explains itself with `--help`.
+last. Every command explains itself with `--help`.
 
 1. **Talk to your OS.** `subos claude` launches Claude as a SubstrateOS kernel, an
    interactive session that drives the harness for you. Start here for any task.
    Swap engines any time: `subos codex` / `subos gemini` / `subos cursor`.
 2. **Preview, then choose your posture.** `subos claude --dry-run` shows exactly what
-   will happen without launching. The default posture is safe; `--full-auto` opts
+   will happen without launching. The default posture is safe. `--full-auto` opts
    into the engine's full-auto mode and `--platform-default` forces safe. Make
    full-auto your personal default with the `SUBSTRATEOS_FULL_AUTO` setting.
 3. **Feed the brain.** `labctl ingest <file|url>` adds a source to local memory.
@@ -90,22 +88,22 @@ last; every command explains itself with `--help`.
    lint, tests, SAST, vuln scan, evals, supply-chain). Run it before every push, and
    `labctl gate --strict` before publishing.
 5. **Orchestrate.** `labctl workflow run "<mission>"` runs a multi-agent build
-   (architect -> workers -> reviewer -> judge); `labctl audit <repo>` audits a
-   codebase the same way; `labctl new` / `labctl build` scaffold and run isolated
+   (architect -> workers -> reviewer -> judge). `labctl audit <repo>` audits a
+   codebase the same way. `labctl new` / `labctl build` scaffold and run isolated
    **capsules**.
 6. **Stay current.** `labctl research` keeps the OS aligned with AI best practices:
    it drives RESYNTH, diffs the result against your ADRs/tooling, and surfaces a
    review report. Guide: [docs/planning/research-pipeline.md](docs/planning/research-pipeline.md).
-7. **Go remote / always-on.** `labctl lab` operates a wake-on-demand box; `labctl
+7. **Go remote / always-on.** `labctl lab` operates a wake-on-demand box. `labctl
    trigger` lets you message it (Telegram) and have it work while you're away.
 8. **Make it yours.** Layer private settings via an **Overlay** (`SUBSTRATEOS_OVERLAY`,
-   scaffold at `templates/overlay-example/`); the public Base ships blank.
+   scaffold at `templates/overlay-example/`). The public Base ships blank.
 
 **Billing note (interactive vs headless).** Talking to `subos claude` runs on your
 normal subscription, including all the autonomous work it does for you in that
 session. Only commands that spawn their *own* background agents (`labctl audit`,
 `labctl build`, `labctl workflow run`, and `labctl research --headless`) use the
-unattended "Agent SDK" lane. Everything is interactive (subscription) by default;
+unattended "Agent SDK" lane. Everything is interactive (subscription) by default.
 the headless lane is always opt-in.
 
 ## Current Phase
@@ -155,27 +153,27 @@ result is reported back on the same chat. Six chat commands: `/status`,
 lives in the gitignored `.env`: `TRIGGER_TELEGRAM_TOKEN` (bot token) and
 `TRIGGER_ALLOWED_USER_IDS` (numeric-id allowlist). The box wakes, drains the queue,
 and re-suspends on a fixed interval, so worst-case command latency equals the wake
-interval (default 10 minutes); `/stay` keeps it awake. Install on the box with
-`labctl trigger install` (unit template in `templates/trigger-systemd/`); threat
+interval (default 10 minutes). `/stay` keeps it awake. Install on the box with
+`labctl trigger install` (unit template in `templates/trigger-systemd/`). Threat
 model in SECURITY.md.
 
 ## Engine-agnostic front-end & dynamic workflows (Phase 2)
 
-SubstrateOS is the substrate; the AI engine is a swappable kernel (ADR-019). One
+SubstrateOS is the substrate. The AI engine is a swappable kernel (ADR-019). One
 canonical spec (`substrate/methodology.md`) compiles to each engine's native files
 (`CLAUDE.md`, `AGENTS.md`, and so on), so you write once and run on any engine.
 
 - `subos <engine>`: launch Claude/Codex/Gemini/Cursor as a SubstrateOS kernel
-  (compiles the instruction file, applies the permission posture; `--full-auto`
+  (compiles the instruction file, applies the permission posture. `--full-auto`
   is opt-in, `--dry-run` inspects). The deterministic guarantees live in
   `labctl`, not the model, so swapping engines never weakens safety.
 - `/substrateos`: in-session warm activation, compiled per engine.
 - `labctl workflow run "<mission>"`: multi-agent orchestration (architect ->
-  workers -> reviewer -> judge; per-agent budget caps; verify-before-accept).
+  workers -> reviewer -> judge, per-agent budget caps, verify-before-accept).
 - `labctl audit <repo>`: codebase-quality audit as that workflow, BM25-grounded
   over the repo's memory namespace, producing a findings report (ADR-025).
-- `labctl build --container`: run a capsule build in Docker; the circuit breaker
-  kills the whole container; OAuth token injected by name only (ADR-025).
+- `labctl build --container`: run a capsule build in Docker. The circuit breaker
+  kills the whole container. OAuth token injected by name only (ADR-025).
 - `labctl research`: keep the OS current with AI best practices (ADR-021).
   `brief`/`sync` drive RESYNTH to re-synthesise a candidate, `review` diffs it
   against the ADRs/tooling/watch-list into a human-promoted report. Operated by your
@@ -183,7 +181,7 @@ canonical spec (`substrate/methodology.md`) compiles to each engine's native fil
 - `labctl conformance`: the cross-engine MUST contract.
 
 Private customisation layers on via an **Overlay** (`SUBSTRATEOS_OVERLAY`, scaffold
-at `templates/overlay-example/`); the Base ships blank and runs naked.
+at `templates/overlay-example/`). The Base ships blank and runs naked.
 
 ## Repo Structure
 
@@ -196,7 +194,7 @@ at `templates/overlay-example/`); the Base ships blank and runs naked.
 - templates/          Capsule + overlay scaffolds
 - artifacts/          Build outputs, context packs, logs
 - install.ps1 / install.sh   One-command installers (Windows / Linux-macOS)
-- Dockerfile          Golden image; the same unit runs locally and on EKS (ADR-026)
+- Dockerfile          Golden image. The same unit runs locally and on EKS (ADR-026)
 - INSTALL.md          Full cross-platform install guide
 
 ## Do Not
@@ -204,3 +202,7 @@ at `templates/overlay-example/`); the Base ships blank and runs naked.
 - Do not start build work without reading docs/architecture/system-overview.md
 - Do not add Postgres, LangGraph, AutoGen, or local inference models
 - Do not allow context bleed between project capsules
+
+## Ownership and third-party rights
+
+SubstrateOS is an original project by M. Walker. The repository-level MIT License covers the original code, documentation, architecture, and methodology. AI engines, dependencies, external tools, and standards retain their own rights and terms. The related `research-dashboard` repository is part of the same project family. See [NOTICE.md](NOTICE.md).
